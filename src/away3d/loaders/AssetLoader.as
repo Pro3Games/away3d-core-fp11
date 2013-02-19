@@ -1,5 +1,5 @@
-package away3d.loaders
-{
+package away3d.loaders {
+	import away3d.loaders.misc.AbstractLoadStrategy;
 	import away3d.arcane;
 	import away3d.events.AssetEvent;
 	import away3d.events.LoaderEvent;
@@ -9,7 +9,7 @@ package away3d.loaders
 	import away3d.loaders.misc.ResourceDependency;
 	import away3d.loaders.misc.SingleFileLoader;
 	import away3d.loaders.parsers.ParserBase;
-	
+
 	import flash.events.EventDispatcher;
 	import flash.net.URLRequest;
 
@@ -147,6 +147,7 @@ package away3d.loaders
 		private var _baseDependency : ResourceDependency;
 		private var _loadingDependency : ResourceDependency;
 		private var _namespace : String;
+		private var _customLoadStrategy : AbstractLoadStrategy;
 		
 		/**
 		 * Create a new ResourceLoadSession object.
@@ -177,7 +178,7 @@ package away3d.loaders
 		 * @param ns An optional namespace string under which the file is to be loaded, allowing the differentiation of two resources with identical assets
 		 * @param parser An optional parser object for translating the loaded data into a usable resource. If not provided, AssetLoader will attempt to auto-detect the file type.
 		 */
-		public function load(req : URLRequest, context : AssetLoaderContext = null, ns : String = null, parser : ParserBase = null) : AssetLoaderToken
+		public function load(req : URLRequest, context : AssetLoaderContext = null, ns : String = null, parser : ParserBase = null, customLoadStrategy : AbstractLoadStrategy = null) : AssetLoaderToken
 		{
 			if (!_token) {
 				_token = new AssetLoaderToken(this);
@@ -185,6 +186,7 @@ package away3d.loaders
 				_uri = req.url = req.url.replace(/\\/g, "/");
 				_context = context;
 				_namespace = ns;
+				_customLoadStrategy = customLoadStrategy;
 				
 				_baseDependency = new ResourceDependency('', req, null, null);
 				retrieveDependency(_baseDependency, parser);
@@ -204,7 +206,7 @@ package away3d.loaders
 		 * @param ns An optional namespace string under which the file is to be loaded, allowing the differentiation of two resources with identical assets
 		 * @param parser An optional parser object for translating the loaded data into a usable resource. If not provided, AssetLoader will attempt to auto-detect the file type.
 		 */
-		public function loadData(data : *, id : String, context : AssetLoaderContext = null, ns : String = null, parser : ParserBase = null) : AssetLoaderToken
+		public function loadData(data : *, id : String, context : AssetLoaderContext = null, ns : String = null, parser : ParserBase = null, customLoadStrategy : AbstractLoadStrategy = null) : AssetLoaderToken
 		{
 			if (!_token) {
 				_token = new AssetLoaderToken(this);
@@ -212,6 +214,7 @@ package away3d.loaders
 				_uri = id;
 				_context = context;
 				_namespace = ns;
+				_customLoadStrategy = customLoadStrategy;				
 				
 				_baseDependency = new ResourceDependency(id, null, data, null);
 				retrieveDependency(_baseDependency, parser);
@@ -290,7 +293,7 @@ package away3d.loaders
 			else {
 				// Resolve URL and start loading
 				dependency.request.url = resolveDependencyUrl(dependency);
-				_loadingDependency.loader.load(dependency.request, parser, _loadingDependency.retrieveAsRawData);
+				_loadingDependency.loader.load(dependency.request, parser, _loadingDependency.retrieveAsRawData, _customLoadStrategy);
 			}
 		}
 		
