@@ -1,7 +1,8 @@
 package away3d.materials.passes {
-	import away3d.animators.data.AnimationRegisterCache;
-	import flash.display3D.Context3DTextureFormat;
+	import com.pro3games.particle.jumpStart.JumpStarter;
+	import com.pro3games.particle.jumpStart.JumpStartTraverser;
 	import away3d.animators.IAnimationSet;
+	import away3d.animators.data.AnimationRegisterCache;
 	import away3d.arcane;
 	import away3d.cameras.Camera3D;
 	import away3d.core.base.IRenderable;
@@ -12,12 +13,13 @@ package away3d.materials.passes {
 	import away3d.materials.MaterialBase;
 	import away3d.materials.lightpickers.LightPickerBase;
 
+	import com.pro3games.particle.jumpStart.JumpStartee;
+
 	import flash.display.BlendMode;
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DBlendFactor;
 	import flash.display3D.Context3DCompareMode;
 	import flash.display3D.Context3DProgramType;
-	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.Context3DTriangleFace;
 	import flash.display3D.Program3D;
 	import flash.display3D.textures.TextureBase;
@@ -34,7 +36,7 @@ package away3d.materials.passes {
 	 * Vertex shader constants index 0-3 are reserved for projections, constant 4 for viewport positioning
 	 * Vertex shader constant index 4 is reserved for render-to-texture scaling
 	 */
-	public class MaterialPassBase extends EventDispatcher
+	public class MaterialPassBase extends EventDispatcher implements JumpStartee
 	{
 		protected var _material : MaterialBase;
 		protected var _animationSet : IAnimationSet;
@@ -489,6 +491,20 @@ package away3d.materials.passes {
 		public function set alphaPremultiplied(value : Boolean) : void
 		{
 			_alphaPremultiplied = value;
+		}
+
+		public function jumpStart(jumpStarter:JumpStarter):void {
+			var proxy:Stage3DProxy = jumpStarter.stage3DProxy;
+			var contextIndex : int = proxy._stage3DIndex;			
+			var context : Context3D = proxy._context3D;
+
+			_context3Ds[contextIndex] = context;
+			updateProgram(proxy);
+			jumpStarter.exit(this);
+		}
+
+		public function acceptTraverser(jumpStartTraverser:JumpStartTraverser):void {
+			jumpStartTraverser.apply(this);
 		}
 	}
 }

@@ -14,6 +14,11 @@ package away3d.materials.utils
 		private static var _matrix : Matrix = new Matrix();
 		private static var _rect : Rectangle = new Rectangle();
 
+		public static function generateMipMaps(source : BitmapData, target : TextureBase, mipmap : BitmapData = null, alpha : Boolean = false, side : int = -1) : void
+		{				
+			Texture(target).uploadFromBitmapData(source);
+		}
+
 		/**
 		 * Uploads a BitmapData with mip maps to a target Texture object.
 		 * @param source The source BitmapData to upload.
@@ -21,7 +26,7 @@ package away3d.materials.utils
 		 * @param mipmap An optional mip map holder to avoids creating new instances for fe animated materials.
 		 * @param alpha Indicate whether or not the uploaded bitmapData is transparent.
 		 */
-		public static function generateMipMaps(source : BitmapData, target : TextureBase, mipmap : BitmapData = null, alpha : Boolean = false, side : int = -1) : void
+		public static function reallyGenerateMipMaps(source : BitmapData, target : TextureBase, mipmap : BitmapData = null, alpha : Boolean = false, side : int = -1) : void
 		{
 			var w : uint = source.width,
 				h : uint = source.height;

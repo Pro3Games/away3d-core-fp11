@@ -1,5 +1,8 @@
-package away3d.materials
-{
+package away3d.materials {
+	import com.pro3games.particle.jumpStart.JumpStartNode;
+	import com.pro3games.particle.jumpStart.JumpStarter;
+	import com.pro3games.particle.jumpStart.JumpStartTraverser;
+	import com.pro3games.particle.jumpStart.JumpStartee;
 	import away3d.animators.IAnimationSet;
 	import away3d.arcane;
 	import away3d.cameras.Camera3D;
@@ -25,7 +28,7 @@ package away3d.materials
 	/**
 	 * MaterialBase forms an abstract base class for any material.
 	 */
-	public class MaterialBase extends NamedAssetBase implements IAsset
+	public class MaterialBase extends NamedAssetBase implements IAsset, JumpStartNode
 	{
 		private static var MATERIAL_ID_COUNT : uint = 0;
 		/**
@@ -540,6 +543,12 @@ package away3d.materials
 					_depthPassId += ids[j];
 					j = len;
 				}
+			}
+		}
+
+		public function acceptTraverser(jumpStartTraverser:JumpStartTraverser):void {		
+			for (var i : int = 0; i < _numPasses; ++i) {
+				_passes[i].acceptTraverser(jumpStartTraverser);
 			}
 		}
 	}

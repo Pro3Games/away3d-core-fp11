@@ -46,7 +46,7 @@
 
 		override protected function uploadContent(texture : TextureBase) : void
 		{
-			MipmapGenerator.generateMipMaps(_bitmapData, texture, _mipMapHolder, true);
+			MipmapGenerator.reallyGenerateMipMaps(_bitmapData, texture, _mipMapHolder, true);
 		}
 
 		private function setMipMap() : void
