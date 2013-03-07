@@ -41,12 +41,14 @@
 
 			_bitmapData = value;
 
-			setMipMap();
+			//setMipMap();
 		}
 
 		override protected function uploadContent(texture : TextureBase) : void
 		{
 			MipmapGenerator.reallyGenerateMipMaps(_bitmapData, texture, _mipMapHolder, true);
+			//_bitmapData.dispose();
+			//_bitmapData = null;
 		}
 
 		private function setMipMap() : void
