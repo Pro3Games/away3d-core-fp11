@@ -53,7 +53,7 @@
 		private var _backgroundColor : uint = 0x000000;
 		private var _backgroundAlpha : Number = 1;
 
-		protected var _mouse3DManager : Mouse3DManager;
+		//protected var _mouse3DManager : Mouse3DManager;
 
 		protected var _renderer : RendererBase;
 		private var _depthRenderer : DepthRenderer;
@@ -158,8 +158,8 @@
 
 			initHitField();
 			
-			_mouse3DManager = new Mouse3DManager();
-			_mouse3DManager.enableMouseListeners(this);
+//			_mouse3DManager = new Mouse3DManager();
+//			_mouse3DManager.enableMouseListeners(this);
 			
 			addEventListener(Event.ADDED_TO_STAGE, onAddedToStage, false, 0, true);
 			addEventListener(Event.ADDED, onAdded, false, 0, true);
@@ -210,12 +210,13 @@
 		 */
 		public function get forceMouseMove() : Boolean
 		{
-			return _mouse3DManager.forceMouseMove;
+			//return _mouse3DManager.forceMouseMove;
+			return false;
 		}
 
 		public function set forceMouseMove(value : Boolean) : void
 		{
-			_mouse3DManager.forceMouseMove = value;
+			//_mouse3DManager.forceMouseMove = value;		
 		}
 
 		public function get background() : Texture2DBase
@@ -623,7 +624,7 @@
 			_scene.traversePartitions(_entityCollector);
 
 			// update picking
-			_mouse3DManager.updateCollider(this);
+			//_mouse3DManager.updateCollider(this);
 
 			if (_requireDepthRender)
 				renderSceneDepthToTexture(_entityCollector);
@@ -652,7 +653,7 @@
 			_entityCollector.cleanUp();
 
 			// fire collected mouse events
-			_mouse3DManager.fireMouseEvents();
+			//_mouse3DManager.fireMouseEvents();
 		}
 
 		protected function updateGlobalPos() : void
@@ -756,11 +757,11 @@
 			if (_rttBufferManager)
 				_rttBufferManager.dispose();
 			
-			_mouse3DManager.disableMouseListeners(this);
+			//_mouse3DManager.disableMouseListeners(this);
 			
 			_rttBufferManager = null;
 			_depthRender = null;
-			_mouse3DManager = null;
+			//_mouse3DManager = null;
 			_depthRenderer = null;
 			_stage3DProxy = null;
 			_renderer = null;
@@ -803,12 +804,13 @@
 		
 		public function get mousePicker() : IPicker
 		{
-			return _mouse3DManager.mousePicker;
+			//return _mouse3DManager.mousePicker;
+			return null;
 		}
 		
 		public function set mousePicker(value : IPicker) : void
 		{
-			_mouse3DManager.mousePicker = value;
+			//_mouse3DManager.mousePicker = value;
 		}
 
 		/**
