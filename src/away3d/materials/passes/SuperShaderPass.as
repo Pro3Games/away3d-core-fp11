@@ -127,8 +127,8 @@ package away3d.materials.passes
 
 		override protected function updateLights() : void
 		{
-			super.updateLights();
-			if(_lightPicker) {
+//			super.updateLights();
+			if (_lightPicker) {
 				_numPointLights = _lightPicker.numPointLights;
 				_numDirectionalLights = _lightPicker.numDirectionalLights;
 				_numLightProbes = _lightPicker.numLightProbes;
@@ -137,6 +137,11 @@ package away3d.materials.passes
 					_numPointLights += _lightPicker.numCastingPointLights;
 					_numDirectionalLights += _lightPicker.numCastingDirectionalLights;
 				}
+			}
+			else {
+				_numPointLights = 0;
+				_numDirectionalLights = 0;
+				_numLightProbes = 0;
 			}
 
 			invalidateShaderProgram();
@@ -292,7 +297,7 @@ package away3d.materials.passes
 					_fragmentConstantData[k++] = pointLight._diffuseR;
 					_fragmentConstantData[k++] = pointLight._diffuseG;
 					_fragmentConstantData[k++] = pointLight._diffuseB;
-					_fragmentConstantData[k++] = pointLight._radius;
+					_fragmentConstantData[k++] = pointLight._radius*pointLight._radius;
 
 					_fragmentConstantData[k++] = pointLight._specularR;
 					_fragmentConstantData[k++] = pointLight._specularG;
