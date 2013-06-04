@@ -1,6 +1,5 @@
-﻿package away3d.entities
-{
-	import away3d.materials.utils.DefaultMaterialManager;
+﻿package away3d.entities {
+
 	import away3d.animators.IAnimator;
 	import away3d.arcane;
 	import away3d.containers.*;
@@ -9,6 +8,11 @@
 	import away3d.events.*;
 	import away3d.library.assets.*;
 	import away3d.materials.*;
+	import away3d.materials.utils.DefaultMaterialManager;
+
+	import com.pro3games.particle.jumpStart.JumpStartTraverser;
+	import com.pro3games.particle.jumpStart.JumpStartee;
+	import com.pro3games.particle.jumpStart.JumpStarter;
 
 	use namespace arcane;
 
@@ -17,7 +21,7 @@
 	 * state. It consists out of SubMeshes, which in turn correspond to SubGeometries. SubMeshes allow different parts
 	 * of the geometry to be assigned different materials.
 	 */
-	public class Mesh extends Entity implements IMaterialOwner, IAsset
+	public class Mesh extends Entity implements IMaterialOwner, IAsset, JumpStartee
 	{
 		private var _subMeshes : Vector.<SubMesh>;
 		protected var _geometry : Geometry;
@@ -355,5 +359,15 @@
 
 			return _pickingCollisionVO.renderable != null;
 		}
+		
+		public function acceptTraverser(jumpStartTraverser:JumpStartTraverser):void {			
+			jumpStartTraverser.apply(this);
+			jumpStartTraverser.pushJumpStarter(this);
+			_material.acceptTraverser(jumpStartTraverser);			
+		}
+
+		public function jumpStart(jumpStarter:JumpStarter):void {
+			jumpStarter.exit(this);
+		}		
 	}
 }
