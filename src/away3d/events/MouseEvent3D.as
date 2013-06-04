@@ -1,25 +1,27 @@
 package away3d.events
 {
-
-	import away3d.containers.ObjectContainer3D;
+	import away3d.arcane;
 	import away3d.containers.ObjectContainer3D;
 	import away3d.containers.View3D;
 	import away3d.core.base.IRenderable;
-	import away3d.core.base.Object3D;
 	import away3d.materials.MaterialBase;
 
 	import flash.events.Event;
 	import flash.geom.Point;
 	import flash.geom.Vector3D;
 
+	use namespace arcane;
+
 	/**
 	 * A MouseEvent3D is dispatched when a mouse event occurs over a mouseEnabled object in View3D.
-	 * todo: we don't have screenZ data, nor global coords, tho this should be easy to implement
+	 * todo: we don't have screenZ data, tho this should be easy to implement
 	 */
 	public class MouseEvent3D extends Event
 	{
-		private var _propagataionStopped : Boolean;
-		
+		// Private.
+		arcane var _allowedToPropagate : Boolean = true;
+		arcane var _parentEvent:MouseEvent3D;
+
 		/**
 		 * Defines the value of the type property of a mouseOver3d event object.
 		 */
@@ -106,6 +108,16 @@ package away3d.events
 		public var uv : Point;
 
 		/**
+		 * The index of the face where the event took place.
+		 */
+		public var index : uint;
+
+		/**
+		 * The index of the subGeometry where the event took place.
+		 */
+		public var subGeometryIndex : uint;
+
+		/**
 		 * The position in object space where the event took place
 		 */
 		public var localPosition : Vector3D;
@@ -143,25 +155,26 @@ package away3d.events
 		{
 			super(type, true, true);
 		}
-		
-		
+
 		/**
 		 * @inheritDoc
 		 */
 		public override function get bubbles() : Boolean
 		{
-			// Don't bubble i propagation has been stopped.
-			return (super.bubbles && !_propagataionStopped);
+			// Don't bubble if propagation has been stopped.
+			return super.bubbles && _allowedToPropagate;
 		}
-		
-		
+
 		/**
 		 * @inheritDoc
 		 */
 		public override function stopPropagation() : void
 		{
 			super.stopPropagation();
-			_propagataionStopped = true;
+			_allowedToPropagate = false;
+			if( _parentEvent ) {
+				_parentEvent._allowedToPropagate = false;
+			}
 		}
 		
 		/**
@@ -170,7 +183,10 @@ package away3d.events
 		public override function stopImmediatePropagation() : void
 		{
 			super.stopImmediatePropagation();
-			_propagataionStopped = true;
+			_allowedToPropagate = false;
+			if( _parentEvent ) {
+				_parentEvent._allowedToPropagate = false;
+			}
 		}
 		
 
@@ -194,10 +210,14 @@ package away3d.events
 			result.uv = uv;
 			result.localPosition = localPosition;
 			result.localNormal = localNormal;
+			result.index = index;
+			result.subGeometryIndex = subGeometryIndex;
 			result.delta = delta;
 
 			result.ctrlKey = ctrlKey;
 			result.shiftKey = shiftKey;
+
+			result._parentEvent = this;
 
 			return result;
 		}

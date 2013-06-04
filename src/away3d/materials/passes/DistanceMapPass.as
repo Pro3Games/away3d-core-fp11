@@ -1,14 +1,15 @@
-﻿package away3d.materials.passes
-{
+﻿package away3d.materials.passes {
 	import away3d.arcane;
 	import away3d.cameras.Camera3D;
 	import away3d.core.base.IRenderable;
 	import away3d.core.managers.Stage3DProxy;
-	import away3d.materials.lightpickers.LightPickerBase;
+	import away3d.core.math.Matrix3DUtils;
 	import away3d.textures.Texture2DBase;
+
+	import flash.display3D.Context3D;
 	import flash.display3D.Context3DProgramType;
 	import flash.display3D.Context3DTextureFormat;
-	import flash.display3D.Context3DVertexBufferFormat;
+	import flash.geom.Matrix3D;
 	import flash.geom.Vector3D;
 
 	use namespace arcane;
@@ -70,8 +71,7 @@
 		arcane override function getVertexCode() : String
 		{
 			var code : String;
-			code = "m44 vt7, vt0, vc0		\n" +
-					"mul op, vt7, vc4		\n" +
+			code = "m44 op, vt0, vc0		\n" +
 					"m44 vt1, vt0, vc5		\n" +
 					"sub v0, vt1, vc9		\n";
 
@@ -93,6 +93,8 @@
 		 */
 		arcane override function getFragmentCode(animationCode:String) : String
 		{
+			// TODO: not used
+			animationCode=animationCode;
 			var code : String;
 			var wrap : String = _repeat ? "wrap" : "clamp";
 			var filter : String;
@@ -131,8 +133,9 @@
 		/**
 		 * @inheritDoc
 		 */
-		arcane override function render(renderable : IRenderable, stage3DProxy : Stage3DProxy, camera : Camera3D) : void
+		arcane override function render(renderable : IRenderable, stage3DProxy : Stage3DProxy, camera : Camera3D, viewProjection : Matrix3D) : void
 		{
+			var context : Context3D = stage3DProxy._context3D;
 			var pos : Vector3D = camera.scenePosition;
 
 			_vertexData[0] = pos.x;
@@ -140,21 +143,29 @@
 			_vertexData[2] = pos.z;
 			_vertexData[3] = 1;
 
-			stage3DProxy._context3D.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 5, renderable.sceneTransform, true);
-			stage3DProxy._context3D.setProgramConstantsFromVector(Context3DProgramType.VERTEX, 9, _vertexData, 1);
+			var sceneTransform : Matrix3D = renderable.getRenderSceneTransform(camera);
+
+			context.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 5, sceneTransform, true);
+			context.setProgramConstantsFromVector(Context3DProgramType.VERTEX, 9, _vertexData, 1);
 
 			if (_alphaThreshold > 0)
 				renderable.activateUVBuffer(1, stage3DProxy);
 
-			super.render(renderable, stage3DProxy, camera);
+			var matrix : Matrix3D = Matrix3DUtils.CALCULATION_MATRIX;
+			matrix.copyFrom(sceneTransform);
+			matrix.append(viewProjection);
+			context.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, matrix, true);
+			renderable.activateVertexBuffer(0, stage3DProxy);
+			context.drawTriangles(renderable.getIndexBuffer(stage3DProxy), 0, renderable.numTriangles);
 		}
 
 		/**
 		 * @inheritDoc
 		 */
-		override arcane function activate(stage3DProxy : Stage3DProxy, camera : Camera3D, textureRatioX : Number, textureRatioY : Number) : void
+		override arcane function activate(stage3DProxy : Stage3DProxy, camera : Camera3D) : void
 		{
-			super.activate(stage3DProxy, camera, textureRatioX, textureRatioY);
+			var context : Context3D = stage3DProxy._context3D;
+			super.activate(stage3DProxy, camera);
 
 			var f : Number = camera.lens.far;
 
@@ -167,11 +178,11 @@
 
 
 			if (_alphaThreshold > 0) {
-				stage3DProxy.setTextureAt(0, _alphaMask.getTextureForStage3D(stage3DProxy));
-				stage3DProxy._context3D.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, _fragmentData, 3);
+				context.setTextureAt(0, _alphaMask.getTextureForStage3D(stage3DProxy));
+				context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, _fragmentData, 3);
 			}
 			else {
-				stage3DProxy._context3D.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, _fragmentData, 2);
+				context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, _fragmentData, 2);
 			}
 		}
 	}

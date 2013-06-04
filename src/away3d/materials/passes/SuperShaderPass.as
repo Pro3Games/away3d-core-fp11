@@ -14,6 +14,8 @@ package away3d.materials.passes
 	import away3d.materials.methods.EffectMethodBase;
 	import away3d.materials.methods.MethodVOSet;
 
+	import flash.display3D.Context3D;
+
 	import flash.geom.ColorTransform;
 	import flash.geom.Vector3D;
 
@@ -38,9 +40,9 @@ package away3d.materials.passes
 			_needFragmentAnimation = true;
 		}
 
-		override protected function createCompiler() : ShaderCompiler
+		override protected function createCompiler(profile : String) : ShaderCompiler
 		{
-			return new SuperShaderCompiler();
+			return new SuperShaderCompiler(profile);
 		}
 
 		public function get includeCasters() : Boolean
@@ -150,9 +152,9 @@ package away3d.materials.passes
 		/**
 		 * @inheritDoc
 		 */
-		override arcane function activate(stage3DProxy : Stage3DProxy, camera : Camera3D, textureRatioX : Number, textureRatioY : Number) : void
+		override arcane function activate(stage3DProxy : Stage3DProxy, camera : Camera3D) : void
 		{
-			super.activate(stage3DProxy, camera, textureRatioX, textureRatioY);
+			super.activate(stage3DProxy, camera);
 
 			if (_methodSetup._colorTransformMethod) _methodSetup._colorTransformMethod.activate(_methodSetup._colorTransformMethodVO, stage3DProxy);
 
@@ -192,6 +194,7 @@ package away3d.materials.passes
 		override protected function addPassesFromMethods() : void
 		{
 			super.addPassesFromMethods();
+
 			if (_methodSetup._colorTransformMethod) addPasses(_methodSetup._colorTransformMethod.passes);
 
 			var methods : Vector.<MethodVOSet> = _methodSetup._methods;
@@ -321,7 +324,8 @@ package away3d.materials.passes
 			var weights : Vector.<Number> = _lightPicker.lightProbeWeights;
 			var len : int = lightProbes.length;
 			var addDiff : Boolean = usesProbesForDiffuse();
-			var addSpec : Boolean = _methodSetup._specularMethod && usesProbesForSpecular();
+			var addSpec : Boolean = Boolean(_methodSetup._specularMethod && usesProbesForSpecular());
+			var context : Context3D = stage3DProxy._context3D;
 
 			if (!(addDiff || addSpec)) return;
 
@@ -329,9 +333,9 @@ package away3d.materials.passes
 				probe = lightProbes[i];
 
 				if (addDiff)
-					stage3DProxy.setTextureAt(_lightProbeDiffuseIndices[i], probe.diffuseMap.getTextureForStage3D(stage3DProxy));
+					context.setTextureAt(_lightProbeDiffuseIndices[i], probe.diffuseMap.getTextureForStage3D(stage3DProxy));
 				if (addSpec)
-					stage3DProxy.setTextureAt(_lightProbeSpecularIndices[i], probe.specularMap.getTextureForStage3D(stage3DProxy));
+					context.setTextureAt(_lightProbeSpecularIndices[i], probe.specularMap.getTextureForStage3D(stage3DProxy));
 			}
 
 			_fragmentConstantData[_probeWeightsIndex] = weights[0];

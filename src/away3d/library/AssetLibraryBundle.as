@@ -1,5 +1,8 @@
 package away3d.library
 {
+	import flash.events.EventDispatcher;
+	import flash.net.URLRequest;
+	
 	import away3d.arcane;
 	import away3d.events.AssetEvent;
 	import away3d.events.LoaderEvent;
@@ -9,14 +12,12 @@ package away3d.library
 	import away3d.library.naming.ConflictStrategy;
 	import away3d.library.naming.ConflictStrategyBase;
 	import away3d.library.utils.AssetLibraryIterator;
+	import away3d.library.utils.IDUtil;
 	import away3d.loaders.AssetLoader;
 	import away3d.loaders.misc.AssetLoaderContext;
 	import away3d.loaders.misc.AssetLoaderToken;
 	import away3d.loaders.misc.SingleFileLoader;
 	import away3d.loaders.parsers.ParserBase;
-	
-	import flash.events.EventDispatcher;
-	import flash.net.URLRequest;
 	
 	use namespace arcane;
 	
@@ -127,6 +128,12 @@ package away3d.library
 	 */
 	[Event(name="animatorComplete", type="away3d.events.AssetEvent")]
 	
+	/**
+	 * Dispatched when an image assets dimensions are not a power of 2
+	 * 
+	 * @eventType away3d.events.AssetEvent
+	 */
+	[Event(name="textureSizeError", type="away3d.events.AssetEvent")]
 	
 	
 	/**
@@ -158,7 +165,7 @@ package away3d.library
 			_assetDictionary = {};
 			_loadingSessions = new Vector.<AssetLoader>;
 			
-			conflictStrategy = ConflictStrategy.APPEND_NUM_SUFFIX.create();
+			conflictStrategy = ConflictStrategy.IGNORE.create();
 			conflictPrecedence = ConflictPrecedence.FAVOR_NEW;
 		}
 		
@@ -292,7 +299,6 @@ package away3d.library
 		 */
 		public function getAsset(name : String, ns : String = null) : IAsset
 		{
-			// TODO not used
 			//var asset : IAsset;
 			
 			if (_assetDictDirty)
@@ -325,6 +331,9 @@ package away3d.library
 			if (old != null) {
 				_strategy.resolveConflict(asset, old, _assetDictionary[ns], _strategyPreference);
 			}
+			
+			//create unique-id (for now this is used in AwayBuilder only
+			asset.id=IDUtil.createUID();
 			
 			// Add it
 			_assets.push(asset);
@@ -475,6 +484,7 @@ package away3d.library
 			_loadingSessions.push(loader);
 			loader.addEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceRetrieved);
 			loader.addEventListener(LoaderEvent.DEPENDENCY_COMPLETE, onDependencyRetrieved);
+			loader.addEventListener(AssetEvent.TEXTURE_SIZE_ERROR, onTextureSizeError);
 			loader.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			loader.addEventListener(AssetEvent.ANIMATION_SET_COMPLETE, onAssetComplete);
 			loader.addEventListener(AssetEvent.ANIMATION_STATE_COMPLETE, onAssetComplete);
@@ -509,6 +519,7 @@ package away3d.library
 			_loadingSessions.push(loader);
 			loader.addEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceRetrieved);
 			loader.addEventListener(LoaderEvent.DEPENDENCY_COMPLETE, onDependencyRetrieved);
+			loader.addEventListener(AssetEvent.TEXTURE_SIZE_ERROR, onTextureSizeError);
 			loader.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			loader.addEventListener(AssetEvent.ANIMATION_SET_COMPLETE, onAssetComplete);
 			loader.addEventListener(AssetEvent.ANIMATION_STATE_COMPLETE, onAssetComplete);
@@ -578,6 +589,11 @@ package away3d.library
 			
 			dispatchEvent(event.clone());
 		}
+
+		private function onTextureSizeError(event : AssetEvent) : void
+		{
+			this.dispatchEvent(event.clone());
+		}
 		
 		/**
 		 * Called when the resource and all of its dependencies was retrieved.
@@ -590,6 +606,7 @@ package away3d.library
 			loader.removeEventListener(LoaderEvent.LOAD_ERROR, onDependencyRetrievingError);
 			loader.removeEventListener(LoaderEvent.RESOURCE_COMPLETE, onResourceRetrieved);
 			loader.removeEventListener(LoaderEvent.DEPENDENCY_COMPLETE, onDependencyRetrieved);
+			loader.removeEventListener(AssetEvent.TEXTURE_SIZE_ERROR, onTextureSizeError);
 			loader.removeEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			loader.removeEventListener(AssetEvent.ANIMATION_SET_COMPLETE, onAssetComplete);
 			loader.removeEventListener(AssetEvent.ANIMATION_STATE_COMPLETE, onAssetComplete);

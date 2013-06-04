@@ -1,8 +1,5 @@
 package away3d.materials {
-	import com.pro3games.particle.jumpStart.JumpStartNode;
-	import com.pro3games.particle.jumpStart.JumpStarter;
-	import com.pro3games.particle.jumpStart.JumpStartTraverser;
-	import com.pro3games.particle.jumpStart.JumpStartee;
+
 	import away3d.animators.IAnimationSet;
 	import away3d.arcane;
 	import away3d.cameras.Camera3D;
@@ -17,11 +14,15 @@ package away3d.materials {
 	import away3d.materials.passes.DepthMapPass;
 	import away3d.materials.passes.DistanceMapPass;
 	import away3d.materials.passes.MaterialPassBase;
-	
+
+	import com.pro3games.particle.jumpStart.JumpStartNode;
+	import com.pro3games.particle.jumpStart.JumpStartTraverser;
+
 	import flash.display.BlendMode;
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DCompareMode;
 	import flash.events.Event;
+	import flash.geom.Matrix3D;
 
 	use namespace arcane;
 
@@ -45,7 +46,6 @@ package away3d.materials {
 
 		arcane var _renderOrderId : int;
 		arcane var _depthPassId : int;
-		arcane var _name : String = "material";
 
 		private var _bothSides : Boolean;
 		private var _animationSet : IAnimationSet;
@@ -100,8 +100,12 @@ package away3d.materials {
 
 		public function set lightPicker(value : LightPickerBase) : void
 		{
-			if (value != _lightPicker)
+			if (value != _lightPicker) {
 				_lightPicker = value;
+				var len : uint = _passes.length;
+				for (var i : uint = 0; i < len; ++i)
+					_passes[i].lightPicker = _lightPicker;
+			}
 		}
 
 		/**
@@ -194,7 +198,8 @@ package away3d.materials {
 		/**
 		 * The blend mode to use when drawing this renderable. The following blend modes are supported:
 		 * <ul>
-		 * <li>BlendMode.NORMAL</li>
+		 * <li>BlendMode.NORMAL: No blending, unless the material inherently needs it</li>
+		 * <li>BlendMode.LAYER: Force blending. This will draw the object the same as NORMAL, but without writing depth writes.</li>
 		 * <li>BlendMode.MULTIPLY</li>
 		 * <li>BlendMode.ADD</li>
 		 * <li>BlendMode.ALPHA</li>
@@ -245,17 +250,6 @@ package away3d.materials {
 			return _uniqueId;
 		}
 
-		public override function get name() : String
-		{
-			return _name;
-		}
-
-		public override function set name(value : String) : void
-		{
-			_name = value;
-		}
-
-
 		/**
 		 * The amount of passes used by the material.
 		 *
@@ -271,14 +265,14 @@ package away3d.materials {
 			return _depthPass.alphaThreshold > 0;
 		}
 
-		arcane function activateForDepth(stage3DProxy : Stage3DProxy, camera : Camera3D, distanceBased : Boolean = false, textureRatioX : Number = 1, textureRatioY : Number = 1) : void
+		arcane function activateForDepth(stage3DProxy : Stage3DProxy, camera : Camera3D, distanceBased : Boolean = false) : void
 		{
 			_distanceBasedDepthRender = distanceBased;
 
 			if (distanceBased)
-				_distancePass.activate(stage3DProxy, camera, textureRatioX, textureRatioY);
+				_distancePass.activate(stage3DProxy, camera);
 			else
-				_depthPass.activate(stage3DProxy, camera, textureRatioX, textureRatioY);
+				_depthPass.activate(stage3DProxy, camera);
 		}
 
 		arcane function deactivateForDepth(stage3DProxy : Stage3DProxy) : void
@@ -289,17 +283,17 @@ package away3d.materials {
 				_depthPass.deactivate(stage3DProxy);
 		}
 
-		arcane function renderDepth(renderable : IRenderable, stage3DProxy : Stage3DProxy, camera : Camera3D) : void
+		arcane function renderDepth(renderable : IRenderable, stage3DProxy : Stage3DProxy, camera : Camera3D, viewProjection : Matrix3D) : void
 		{
 			if (_distanceBasedDepthRender) {
 				if (renderable.animator)
 					_distancePass.updateAnimationState(renderable, stage3DProxy, camera);
-				_distancePass.render(renderable, stage3DProxy, camera);
+				_distancePass.render(renderable, stage3DProxy, camera, viewProjection);
 			}
 			else {
 				if (renderable.animator)
 					_depthPass.updateAnimationState(renderable, stage3DProxy, camera);
-				_depthPass.render(renderable, stage3DProxy, camera);
+				_depthPass.render(renderable, stage3DProxy, camera, viewProjection);
 			}
 		}
 
@@ -315,9 +309,9 @@ package away3d.materials {
 		 * @param camera The camera from which the scene is viewed.
 		 * @private
 		 */
-		arcane function activatePass(index : uint, stage3DProxy : Stage3DProxy, camera : Camera3D, textureRatioX : Number, textureRatioY : Number) : void
+		arcane function activatePass(index : uint, stage3DProxy : Stage3DProxy, camera : Camera3D) : void
 		{
-			_passes[index].activate(stage3DProxy, camera, textureRatioX, textureRatioY);
+			_passes[index].activate(stage3DProxy, camera);
 		}
 
 		/**
@@ -336,7 +330,7 @@ package away3d.materials {
 		 * @param index The pass to render with.
 		 * @private
 		 */
-		arcane function renderPass(index : uint, renderable : IRenderable, stage3DProxy : Stage3DProxy, entityCollector : EntityCollector) : void
+		arcane function renderPass(index : uint, renderable : IRenderable, stage3DProxy : Stage3DProxy, entityCollector : EntityCollector, viewProjection : Matrix3D) : void
 		{
 			if (_lightPicker)
 				_lightPicker.collectLights(renderable, entityCollector);
@@ -346,7 +340,7 @@ package away3d.materials {
 			if (renderable.animator)
 				pass.updateAnimationState(renderable, stage3DProxy, entityCollector.camera);
 
-			pass.render(renderable, stage3DProxy, entityCollector.camera);
+			pass.render(renderable, stage3DProxy, entityCollector.camera, viewProjection);
 		}
 
 
@@ -491,6 +485,7 @@ package away3d.materials {
 			pass.mipmap = _mipmap;
 			pass.smooth = _smooth;
 			pass.repeat = _repeat;
+			pass.lightPicker = _lightPicker;
 			pass.addEventListener(Event.CHANGE, onPassChange);
 			invalidatePasses(null);
 		}
@@ -545,11 +540,11 @@ package away3d.materials {
 				}
 			}
 		}
-
+		
 		public function acceptTraverser(jumpStartTraverser:JumpStartTraverser):void {		
 			for (var i : int = 0; i < _numPasses; ++i) {
 				_passes[i].acceptTraverser(jumpStartTraverser);
 			}
-		}
+		}		
 	}
 }

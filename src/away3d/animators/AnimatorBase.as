@@ -1,15 +1,20 @@
 package away3d.animators
 {
-	import away3d.animators.nodes.*;
-	import away3d.animators.states.*;
-	import away3d.arcane;
-	import away3d.entities.*;
-	import away3d.events.*;
+	import flash.display.Sprite;
+	import flash.events.Event;
+	import flash.geom.Vector3D;
+	import flash.utils.Dictionary;
+	import flash.utils.getTimer;
 	
-	import flash.display.*;
-	import flash.events.*;
-	import flash.geom.*;
-	import flash.utils.*;
+	import away3d.arcane;
+	import away3d.animators.nodes.AnimationNodeBase;
+	import away3d.animators.states.AnimationStateBase;
+	import away3d.animators.states.IAnimationState;
+	import away3d.entities.Mesh;
+	import away3d.events.AnimatorEvent;
+	import away3d.library.assets.AssetType;
+	import away3d.library.assets.IAsset;
+	import away3d.library.assets.NamedAssetBase;
 	
 	use namespace arcane;
 	
@@ -27,19 +32,27 @@ package away3d.animators
 	 * @eventType away3d.events.AnimatorEvent
 	 */
 	[Event(name="stop",type="away3d.events.AnimatorEvent")]
+
+	/**
+	 * Dispatched when playback of an animation reaches the end of an animation.
+	 *
+	 * @eventType away3d.events.AnimatorEvent
+	 */
+	[Event(name="cycle_complete",type="away3d.events.AnimatorEvent")]
 	
 	/**
 	 * Provides an abstract base class for animator classes that control animation output from a data set subtype of <code>AnimationSetBase</code>.
 	 *
 	 * @see away3d.animators.AnimationSetBase
 	 */
-	public class AnimatorBase extends EventDispatcher
+	public class AnimatorBase extends NamedAssetBase implements IAsset
 	{
 		private var _broadcaster : Sprite = new Sprite();
 		private var _isPlaying : Boolean;
 		private var _autoUpdate : Boolean = true;
 		private var _startEvent : AnimatorEvent;
 		private var _stopEvent : AnimatorEvent;
+		private var _cycleEvent : AnimatorEvent;
 		private var _time : int;
 		private var _playbackSpeed : Number = 1;
 		
@@ -47,7 +60,7 @@ package away3d.animators
 		protected var _owners : Vector.<Mesh> = new Vector.<Mesh>();
 		protected var _activeNode:AnimationNodeBase;
 		protected var _activeState:IAnimationState;
-		protected var _name:String;
+		protected var _activeAnimationName:String;
 		protected var _absoluteTime : Number = 0;
 		private var _animationStates:Dictionary = new Dictionary(true);
 		
@@ -102,7 +115,7 @@ package away3d.animators
 		 */
 		public function get activeAnimation():AnimationNodeBase
 		{
-			return _animationSet.getAnimation(_name);
+			return _animationSet.getAnimation(_activeAnimationName);
 		}
 		
 		/**
@@ -110,7 +123,7 @@ package away3d.animators
 		 */
 		public function get activeAnimationName():String
 		{
-			return _name;
+			return _activeAnimationName;
 		}
 		
 		/**
@@ -306,6 +319,30 @@ package away3d.animators
 				for (var i : uint = 0; i < len; ++i)
 					_owners[i].translateLocal(delta, dist);
 			}
+		}
+
+		/**
+		 *  for internal use.
+		 *
+		 * @private
+		 */
+		public function dispatchCycleEvent() : void
+		{
+			if (hasEventListener(AnimatorEvent.CYCLE_COMPLETE))
+				dispatchEvent(_cycleEvent || (_cycleEvent = new AnimatorEvent(AnimatorEvent.CYCLE_COMPLETE, this)));
+		}
+		/**
+		 * @inheritDoc
+		 */
+		public function dispose():void
+		{
+		}
+		/**
+		 * @inheritDoc
+		 */
+		public function get assetType() : String
+		{
+			return AssetType.ANIMATOR;
 		}
 	}
 }

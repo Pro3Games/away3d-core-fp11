@@ -1,10 +1,8 @@
-package away3d.core.base
-{
+package away3d.core.base {
 	import away3d.arcane;
 	import away3d.core.managers.Stage3DProxy;
-	import flash.display3D.Context3D;
-	import flash.display3D.Context3DVertexBufferFormat;
 
+	import flash.display3D.Context3D;
 	import flash.display3D.VertexBuffer3D;
 	import flash.utils.Dictionary;
 
@@ -108,12 +106,11 @@ package away3d.core.base
 
 			if (_jointIndexContext[contextIndex] != context || !_jointIndexBuffer[contextIndex]) {
 				_jointIndexBuffer[contextIndex] = context.createVertexBuffer(_numVertices, _jointsPerVertex);
-				_jointIndexBuffer[contextIndex].uploadFromVector(_numCondensedJoints > 0? _condensedJointIndexData : _jointIndexData, 0, _jointIndexData.length / _jointsPerVertex);
 				_jointIndexContext[contextIndex] = context;
-				_jointIndicesInvalid[contextIndex] = true;
+				_jointWeightsInvalid[contextIndex] = true;
 			}
 			if (_jointIndicesInvalid[contextIndex]) {
-				_jointIndexBuffer[contextIndex].uploadFromVector(_jointIndexData, 0, _jointIndexData.length / _jointsPerVertex);
+				_jointIndexBuffer[contextIndex].uploadFromVector(_numCondensedJoints > 0? _condensedJointIndexData : _jointIndexData, 0, _jointIndexData.length / _jointsPerVertex);
 				_jointIndicesInvalid[contextIndex] = false;
 			}
 			context.setVertexBufferAt(index, _jointIndexBuffer[contextIndex], 0, _bufferFormat);

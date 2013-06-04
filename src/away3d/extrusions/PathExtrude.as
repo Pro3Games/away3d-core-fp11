@@ -1,6 +1,5 @@
 package away3d.extrusions
 {
-
 	import away3d.bounds.BoundingVolumeBase;
 	import away3d.core.base.Geometry;
 	import away3d.core.base.SubGeometry;
@@ -10,10 +9,8 @@ package away3d.extrusions
 	import away3d.core.math.Vector3DUtils;
 	import away3d.entities.Mesh;
 	import away3d.materials.MaterialBase;
-	import away3d.materials.TextureMaterial;
 	import away3d.paths.IPath;
 	import away3d.paths.IPathSegment;
-	import away3d.textures.BitmapTexture;
 	import away3d.tools.helpers.MeshHelper;
 
 	import flash.geom.Matrix3D;
@@ -96,6 +93,8 @@ package away3d.extrusions
 		 */
 		function PathExtrude(material : MaterialBase = null, path : IPath = null, profile : Vector.<Vector3D> = null, subdivision : uint = 2, coverAll : Boolean = true, coverSegment : Boolean = false, alignToPath : Boolean = true, centerMesh : Boolean = false, mapFit : Boolean = false, flip : Boolean = false, closePath : Boolean = false, materials : Vector.<MaterialBase> = null, scales : Vector.<Vector3D> = null, smoothScale : Boolean = true, rotations : Vector.<Vector3D> = null, smoothSurface : Boolean = true, distribute : Boolean = false, distributeU : Boolean = true, keepExtremes : Boolean = false)
 		{
+			distribute=distribute;
+			
 			var geom : Geometry = new Geometry();
 			_subGeometry = new SubGeometry();
 			super(geom, material);
@@ -1287,7 +1286,6 @@ package away3d.extrusions
 		}
 	}
 }
-
 import away3d.core.base.SubGeometry;
 import away3d.materials.MaterialBase;
 

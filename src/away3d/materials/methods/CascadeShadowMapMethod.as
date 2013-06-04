@@ -1,18 +1,15 @@
 package away3d.materials.methods
 {
-	import away3d.arcane;
-	import away3d.cameras.Camera3D;
-	import away3d.core.base.IRenderable;
-	import away3d.core.managers.Stage3DProxy;
-	import away3d.events.ShadingMethodEvent;
-	import away3d.lights.DirectionalLight;
-	import away3d.lights.shadowmaps.CascadeShadowMapper;
-	import away3d.lights.shadowmaps.CascadeShadowMapper;
-	import away3d.materials.compilation.ShaderRegisterCache;
-	import away3d.materials.compilation.ShaderRegisterData;
-	import away3d.materials.compilation.ShaderRegisterElement;
-
-	import flash.events.Event;
+	import away3d.*;
+	import away3d.cameras.*;
+	import away3d.core.base.*;
+	import away3d.core.managers.*;
+	import away3d.events.*;
+	import away3d.lights.*;
+	import away3d.lights.shadowmaps.*;
+	import away3d.materials.compilation.*;
+	
+	import flash.events.*;
 
 	use namespace arcane;
 
@@ -100,7 +97,7 @@ package away3d.materials.methods
 			var dataReg : ShaderRegisterElement = regCache.getFreeVertexConstant();
 
 			initProjectionsRegs(regCache);
-			vo.vertexConstantsIndex = (dataReg.index-vo.vertexConstantsOffset)*4;
+			vo.vertexConstantsIndex = dataReg.index*4;
 
 			var temp : ShaderRegisterElement = regCache.getFreeVertexVectorTemp();
 
@@ -135,7 +132,6 @@ package away3d.materials.methods
 			var planeDistanceReg : ShaderRegisterElement = regCache.getFreeFragmentConstant();
 			var planeDistances : Vector.<String> = new <String>[ planeDistanceReg + ".x", planeDistanceReg + ".y", planeDistanceReg + ".z", planeDistanceReg + ".w" ];
 			var code : String;
-			var boundIndex : int = numCascades - 1;
 
 			vo.fragmentConstantsIndex = decReg.index*4;
 			vo.texturesIndex = depthMapRegister.index;
@@ -146,13 +142,13 @@ package away3d.materials.methods
 			regCache.addFragmentTempUsages(uvCoord, 1);
 
 			// assume lowest partition is selected, will be overwritten later otherwise
-			code = "mov " + uvCoord + ", " + _depthMapCoordVaryings[0] + "\n";
+			code = "mov " + uvCoord + ", " + _depthMapCoordVaryings[numCascades-1] + "\n";
 
-			for (var i : int = 1; i < numCascades; ++i) {
+			for (var i : int = numCascades - 2; i >= 0; --i) {
 				var uvProjection : ShaderRegisterElement = _depthMapCoordVaryings[i];
 
 				// calculate if in texturemap (result == 0 or 1, only 1 for a single partition)
-				code += "slt " + inQuad + ".z, " + _sharedRegisters.projectionFragment + ".w, " + planeDistances[--boundIndex] + "\n"; // z = x > minX, w = y > minY
+				code += "slt " + inQuad + ".z, " + _sharedRegisters.projectionFragment + ".z, " + planeDistances[i] + "\n"; // z = x > minX, w = y > minY
 
 				var temp : ShaderRegisterElement = regCache.getFreeFragmentVectorTemp();
 
@@ -182,15 +178,16 @@ package away3d.materials.methods
 		 */
 		override arcane function activate(vo : MethodVO, stage3DProxy : Stage3DProxy) : void
 		{
-			stage3DProxy.setTextureAt(vo.texturesIndex, _castingLight.shadowMapper.depthMap.getTextureForStage3D(stage3DProxy));
+			stage3DProxy._context3D.setTextureAt(vo.texturesIndex, _castingLight.shadowMapper.depthMap.getTextureForStage3D(stage3DProxy));
 
 			var vertexData : Vector.<Number> = vo.vertexData;
 			var vertexIndex : int = vo.vertexConstantsIndex;
-			vertexData[vertexIndex + 3] = -_epsilon;
+			
+			vo.vertexData[vo.vertexConstantsIndex + 3] = -1/(_cascadeShadowMapper.depth*_epsilon);
 
 			var numCascades : int = _cascadeShadowMapper.numCascades;
 			vertexIndex += 4;
-			for (var k : int = numCascades-1; k >= 0; --k) {
+			for (var k : int = 0; k < numCascades; ++k) {
 				_cascadeShadowMapper.getDepthProjections(k).copyRawDataTo(vertexData, vertexIndex, true);
 				vertexIndex += 16;
 			}

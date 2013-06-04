@@ -82,6 +82,7 @@ package away3d.animators.nodes
 		 */
 		override public function getAGALVertexCode(pass:MaterialPassBase, animationRegisterCache:AnimationRegisterCache) : String
 		{
+			pass=pass;
 			
 			var orbitRegister:ShaderRegisterElement = (_mode == ParticlePropertiesMode.GLOBAL)? animationRegisterCache.getFreeVertexConstant() : animationRegisterCache.getFreeVertexAttribute();
 			animationRegisterCache.setRegisterIndex(this, ORBIT_INDEX, orbitRegister.index);
@@ -98,9 +99,9 @@ package away3d.animators.nodes
 			
 			
 			var temp2:ShaderRegisterElement = animationRegisterCache.getFreeVertexVectorTemp();
-			var cos:ShaderRegisterElement = new ShaderRegisterElement(temp2.regName, temp2.index, "x");
-			var sin:ShaderRegisterElement = new ShaderRegisterElement(temp2.regName, temp2.index, "y");
-			var degree:ShaderRegisterElement = new ShaderRegisterElement(temp2.regName, temp2.index, "z");
+			var cos:ShaderRegisterElement = new ShaderRegisterElement(temp2.regName, temp2.index, 0);
+			var sin:ShaderRegisterElement = new ShaderRegisterElement(temp2.regName, temp2.index, 1);
+			var degree:ShaderRegisterElement = new ShaderRegisterElement(temp2.regName, temp2.index, 2);
 			animationRegisterCache.removeVertexTempUsage(temp1);
 			
 			var code:String = "";

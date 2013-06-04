@@ -110,14 +110,18 @@ package away3d.animators.nodes
 		 */
 		override public function getAGALUVCode(pass:MaterialPassBase, animationRegisterCache:AnimationRegisterCache) : String
 		{
+			pass=pass;
 			var code:String = "";
 			
 			if (animationRegisterCache.needUVAnimation)
 			{
 				var uvConst:ShaderRegisterElement = animationRegisterCache.getFreeVertexConstant();
 				animationRegisterCache.setRegisterIndex(this, UV_INDEX, uvConst.index);
-		
-				var target:ShaderRegisterElement = new ShaderRegisterElement(animationRegisterCache.uvTarget.regName, animationRegisterCache.uvTarget.index, _axis);
+
+				var axisIndex : Number = 	_axis == "x"? 	0 :
+											_axis == "y"? 	1 :
+															2;
+				var target:ShaderRegisterElement = new ShaderRegisterElement(animationRegisterCache.uvTarget.regName, animationRegisterCache.uvTarget.index, axisIndex);
 							
 				var sin:ShaderRegisterElement = animationRegisterCache.getFreeVertexSingleTemp();
 				

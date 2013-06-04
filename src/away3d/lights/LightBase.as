@@ -7,8 +7,9 @@ package away3d.lights
 	import away3d.entities.Entity;
 	import away3d.errors.AbstractMethodError;
 	import away3d.events.LightEvent;
+	import away3d.library.assets.AssetType;
 	import away3d.lights.shadowmaps.ShadowMapperBase;
-
+	
 	import flash.geom.Matrix3D;
 
 	use namespace arcane;
@@ -57,7 +58,7 @@ package away3d.lights
 		{
 			return _castsShadows;
 		}
-
+		
 		public function set castsShadows(value : Boolean) : void
 		{
 			if (_castsShadows == value) return;
@@ -81,7 +82,7 @@ package away3d.lights
 		}
 
 		/**
-		 * The specular emission strength of the light.
+		 * The specular emission strength of the light. Default value is <code>1</code>.
 		 */
 		public function get specular() : Number
 		{
@@ -97,7 +98,7 @@ package away3d.lights
 		}
 
 		/**
-		 * The diffuse emission strength of the light.
+		 * The diffuse emission strength of the light. Default value is <code>1</code>.
 		 */
 		public function get diffuse() : Number
 		{
@@ -113,7 +114,7 @@ package away3d.lights
 		}
 
 		/**
-		 * The color of the light.
+		 * The color of the light. Default value is <code>0xffffff</code>.
 		 */
 		public function get color() : uint
 		{
@@ -131,7 +132,7 @@ package away3d.lights
 		}
 
 		/**
-		 * The ambient emission strength of the light.
+		 * The ambient emission strength of the light. Default value is <code>0</code>.
 		 */
 		public function get ambient() : Number
 		{
@@ -151,6 +152,9 @@ package away3d.lights
 			return _ambientColor;
 		}
 
+		/**
+		 * The ambient emission colour of the light. Default value is <code>0xffffff</code>.
+		 */
 		public function set ambientColor(value : uint) : void
 		{
 			_ambientColor = value;
@@ -163,10 +167,6 @@ package away3d.lights
 			_ambientG = ((_ambientColor >> 8) & 0xff)/0xff*_ambient;
 			_ambientB = (_ambientColor & 0xff)/0xff*_ambient;
 		}
-
-		/**
-		 * The ambient emission colour of the light
-		 */
 
 		/**
 		 * Gets the optimal projection matrix to render a light-based depth map for a single object.
@@ -186,6 +186,15 @@ package away3d.lights
 		{
 			return new LightNode(this);
 		}
+		
+		/**
+		 * @inheritDoc
+		 */		
+		override public function get assetType() : String
+		{
+			return AssetType.LIGHT;
+		}
+		
 
 		/**
 		 * Updates the total specular components of the light.

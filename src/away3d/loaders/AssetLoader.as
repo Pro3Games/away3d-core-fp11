@@ -1,9 +1,10 @@
 package away3d.loaders {
-	import away3d.loaders.misc.AbstractLoadStrategy;
+
 	import away3d.arcane;
 	import away3d.events.AssetEvent;
 	import away3d.events.LoaderEvent;
 	import away3d.events.ParserEvent;
+	import away3d.loaders.misc.AbstractLoadStrategy;
 	import away3d.loaders.misc.AssetLoaderContext;
 	import away3d.loaders.misc.AssetLoaderToken;
 	import away3d.loaders.misc.ResourceDependency;
@@ -121,6 +122,13 @@ package away3d.loaders {
 	 * @eventType away3d.events.AssetEvent
 	 */
 	[Event(name="animatorComplete", type="away3d.events.AssetEvent")]
+
+	/**
+	 * Dispatched when an image asset dimensions are not a power of 2
+	 * 
+	 * @eventType away3d.events.AssetEvent
+	 */
+	[Event(name="textureSizeError", type="away3d.events.AssetEvent")]
 	
 	
 	/**
@@ -186,7 +194,7 @@ package away3d.loaders {
 				_uri = req.url = req.url.replace(/\\/g, "/");
 				_context = context;
 				_namespace = ns;
-				_customLoadStrategy = customLoadStrategy;
+				_customLoadStrategy = customLoadStrategy;				
 				
 				_baseDependency = new ResourceDependency('', req, null, null);
 				retrieveDependency(_baseDependency, parser);
@@ -214,7 +222,7 @@ package away3d.loaders {
 				_uri = id;
 				_context = context;
 				_namespace = ns;
-				_customLoadStrategy = customLoadStrategy;				
+				_customLoadStrategy = customLoadStrategy;							
 				
 				_baseDependency = new ResourceDependency(id, null, data, null);
 				retrieveDependency(_baseDependency, parser);
@@ -403,7 +411,7 @@ package away3d.loaders {
 				var i : uint, len : uint = _errorHandlers.length;
 				for (i=0; i<len; i++) {
 					var handlerFunction : Function = _errorHandlers[i];
-					handled ||= handlerFunction(event);
+					handled ||= Boolean(handlerFunction(event));
 				}
 			}
 			
@@ -477,12 +485,21 @@ package away3d.loaders {
 			
 			// Retrieve any last dependencies remaining on this loader, or
 			// if none exists, just move on.
-			if (loader.dependencies.length) {
+			if (loader.dependencies.length && (!_context || _context.includeDependencies)) { //context may be null
 				retrieveLoaderDependencies(loader);
 			}
 			else {
 				retrieveNext();
 			}
+		}
+
+		/**
+		 * Called when an image is too large or it's dimensions are not a power of 2
+		 * @param event
+		 */
+		private function onTextureSizeError(event : AssetEvent) : void {			
+			event.asset.name = _loadingDependency.resolveName(event.asset);
+			dispatchEvent(event);
 		}
 		
 		
@@ -490,6 +507,7 @@ package away3d.loaders {
 		{
 			loader.addEventListener(LoaderEvent.DEPENDENCY_COMPLETE, onRetrievalComplete);
 			loader.addEventListener(LoaderEvent.LOAD_ERROR, onRetrievalFailed);
+			loader.addEventListener(AssetEvent.TEXTURE_SIZE_ERROR, onTextureSizeError);
 			loader.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			loader.addEventListener(AssetEvent.ANIMATION_SET_COMPLETE, onAssetComplete);
 			loader.addEventListener(AssetEvent.ANIMATION_STATE_COMPLETE, onAssetComplete);
@@ -512,6 +530,7 @@ package away3d.loaders {
 			loader.removeEventListener(ParserEvent.READY_FOR_DEPENDENCIES, onReadyForDependencies);
 			loader.removeEventListener(LoaderEvent.DEPENDENCY_COMPLETE, onRetrievalComplete);
 			loader.removeEventListener(LoaderEvent.LOAD_ERROR, onRetrievalFailed);
+			loader.removeEventListener(AssetEvent.TEXTURE_SIZE_ERROR, onTextureSizeError);
 			loader.removeEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			loader.removeEventListener(AssetEvent.ANIMATION_SET_COMPLETE, onAssetComplete);
 			loader.removeEventListener(AssetEvent.ANIMATION_STATE_COMPLETE, onAssetComplete);

@@ -1,10 +1,5 @@
-package away3d.loaders.parsers
-{
+package away3d.loaders.parsers {
 	import away3d.arcane;
-	import away3d.core.base.CompactSubGeometry;
-	import away3d.core.base.ISubGeometry;
-	import away3d.core.base.SkinnedSubGeometry;
-	import away3d.core.base.SubGeometry;
 	import away3d.errors.AbstractMethodError;
 	import away3d.events.AssetEvent;
 	import away3d.events.ParserEvent;
@@ -13,7 +8,7 @@ package away3d.loaders.parsers
 	import away3d.loaders.misc.ResourceDependency;
 	import away3d.loaders.parsers.utils.ParserUtil;
 	import away3d.tools.utils.TextureUtils;
-	
+
 	import flash.display.BitmapData;
 	import flash.events.EventDispatcher;
 	import flash.events.TimerEvent;
@@ -256,7 +251,6 @@ package away3d.loaders.parsers
 		public function parseAsync(data : *, frameLimit : Number = 30) : void
 		{
 			_data = data;
-			
 			startParsing(frameLimit);
 		}
 		
@@ -289,11 +283,21 @@ package away3d.loaders.parsers
 		{
 			throw new AbstractMethodError();
 		}
+
+		/**
+		 * Resolve a dependency name
+		 *
+		 * @param resourceDependency The dependency to be resolved.
+		 */
+		arcane function resolveDependencyName(resourceDependency : ResourceDependency, asset:IAsset) : String
+		{
+			return asset.name;
+		}
 		
 		arcane function resumeParsingAfterDependencies() : void
 		{
 			_parsingPaused = false;
-			_timer.start();
+			if (_timer){	_timer.start();}
 		}
 		
 		
@@ -307,6 +311,18 @@ package away3d.loaders.parsers
 				asset.name = name;
 			
 			switch (asset.assetType) {
+				case AssetType.LIGHT_PICKER:
+					type_name = 'lightPicker';
+					type_event = AssetEvent.LIGHTPICKER_COMPLETE;
+					break;
+				case AssetType.LIGHT:
+					type_name = 'light';
+					type_event = AssetEvent.LIGHT_COMPLETE;
+					break;
+				case AssetType.ANIMATOR:
+					type_name = 'animator';
+					type_event = AssetEvent.ANIMATOR_COMPLETE;
+					break;
 				case AssetType.ANIMATION_SET:
 					type_name = 'animationSet';
 					type_event = AssetEvent.ANIMATION_SET_COMPLETE;
@@ -326,6 +342,10 @@ package away3d.loaders.parsers
 				case AssetType.TEXTURE:
 					type_name = 'texture';
 					type_event = AssetEvent.TEXTURE_COMPLETE;
+					break;
+				case AssetType.TEXTURE_PROJECTOR:
+					type_name = 'textureProjector';
+					type_event = AssetEvent.TEXTURE_PROJECTOR_COMPLETE;
 					break;
 				case AssetType.CONTAINER:
 					type_name = 'container';
@@ -355,14 +375,26 @@ package away3d.loaders.parsers
 					type_name = 'entity';
 					type_event = AssetEvent.ENTITY_COMPLETE;
 					break;
+				case AssetType.SKYBOX:
+					type_name = 'skybox';
+					type_event = AssetEvent.SKYBOX_COMPLETE;
+					break;
 				case AssetType.SEGMENT_SET:
 					type_name = 'segmentSet';
 					type_event = AssetEvent.SEGMENT_SET_COMPLETE;
 					break;
+				case AssetType.EFFECTS_METHOD:
+					type_name = 'effectsMethod';
+					type_event = AssetEvent.EFFECTMETHOD_COMPLETE;
+					break;
+				case AssetType.SHADOW_MAP_METHOD:
+					type_name = 'effectsMethod';
+					type_event = AssetEvent.SHADOWMAPMETHOD_COMPLETE;
+					break;
 				default:
 					throw new Error('Unhandled asset type '+asset.assetType+'. Report as bug!');
 					break;
-			}
+			};
 				
 			// If the asset has no name, give it
 			// a per-type default name.
@@ -422,7 +454,6 @@ package away3d.loaders.parsers
 		protected function onInterval(event : TimerEvent = null) : void
 		{
 			_lastFrameTime = getTimer();
-			
 			if (proceedParsing() && !_parsingFailure)
 				finishParsing();
 		}

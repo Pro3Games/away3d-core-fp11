@@ -50,6 +50,7 @@ package away3d.animators.nodes
 		 */
 		override public function getAGALVertexCode(pass:MaterialPassBase, animationRegisterCache:AnimationRegisterCache) : String
 		{
+			pass=pass;
 			var timeStreamRegister:ShaderRegisterElement = animationRegisterCache.getFreeVertexAttribute();//timeStreamRegister.x is start，timeStreamRegister.y is during time
 			animationRegisterCache.setRegisterIndex(this, TIME_STREAM_INDEX, timeStreamRegister.index);
 			var timeConst:ShaderRegisterElement = animationRegisterCache.getFreeVertexConstant();
@@ -60,7 +61,7 @@ package away3d.animators.nodes
 			//if time=0,set the position to zero.
 			var temp:ShaderRegisterElement = animationRegisterCache.getFreeVertexSingleTemp();
 			code += "sge " + temp + "," + animationRegisterCache.vertexTime + "," + animationRegisterCache.vertexZeroConst + "\n";
-			code += "mul " + animationRegisterCache.scaleAndRotateTarget + "," + animationRegisterCache.scaleAndRotateTarget + "," + temp + "\n";
+			code += "mul " + animationRegisterCache.scaleAndRotateTarget + ".xyz," + animationRegisterCache.scaleAndRotateTarget + ".xyz," + temp + "\n";
 			if (_usesDuration)
 			{
 				if (_usesLooping)
@@ -72,7 +73,7 @@ package away3d.animators.nodes
 						code += "frc " + div + "," + div + "\n";
 						code += "mul " + animationRegisterCache.vertexTime + "," +div + "," + timeStreamRegister + ".z\n";
 						code += "slt " + div + "," + animationRegisterCache.vertexTime + "," + timeStreamRegister + ".y\n";
-						code += "mul " + animationRegisterCache.scaleAndRotateTarget + "," + animationRegisterCache.scaleAndRotateTarget + "," + div + "\n";
+						code += "mul " + animationRegisterCache.scaleAndRotateTarget + ".xyz," + animationRegisterCache.scaleAndRotateTarget + ".xyz," + div + "\n";
 					}
 					else
 					{
@@ -85,15 +86,10 @@ package away3d.animators.nodes
 				{
 					var sge:ShaderRegisterElement = animationRegisterCache.getFreeVertexSingleTemp();
 					code += "sge " + sge + "," +  timeStreamRegister + ".y," + animationRegisterCache.vertexTime + "\n";
-					code += "mul " + animationRegisterCache.scaleAndRotateTarget + "," + animationRegisterCache.scaleAndRotateTarget + "," + sge + "\n";
+					code += "mul " + animationRegisterCache.scaleAndRotateTarget + ".xyz," + animationRegisterCache.scaleAndRotateTarget + ".xyz," + sge + "\n";
 				}
 			}
 			code += "mul " + animationRegisterCache.vertexLife + "," + animationRegisterCache.vertexTime + "," + timeStreamRegister + ".w\n";
-			if (animationRegisterCache.needFragmentAnimation && animationRegisterCache.hasColorNode)
-			{
-				code += "mov " + animationRegisterCache.fragmentTime + "," + animationRegisterCache.vertexTime +"\n";
-				code += "mov " + animationRegisterCache.fragmentLife + "," + animationRegisterCache.vertexLife +"\n";
-			}
 			return code;
 		}
 		

@@ -1,17 +1,16 @@
 package away3d.core.base
 {
-
-	import away3d.animators.data.AnimationSubGeometry;
 	import away3d.animators.IAnimator;
+	import away3d.animators.data.AnimationSubGeometry;
 	import away3d.arcane;
 	import away3d.bounds.BoundingVolumeBase;
+	import away3d.cameras.Camera3D;
 	import away3d.core.managers.Stage3DProxy;
 	import away3d.entities.Entity;
 	import away3d.entities.Mesh;
 	import away3d.materials.MaterialBase;
 
 	import flash.display3D.IndexBuffer3D;
-	import flash.display3D.VertexBuffer3D;
 	import flash.geom.Matrix;
 	import flash.geom.Matrix3D;
 
@@ -158,14 +157,6 @@ package away3d.core.base
 		}
 
 		/**
-		 * The distance of the SubMesh object to the view, used to sort per object.
-		 */
-		public function get zIndex() : Number
-		{
-			return _parentMesh.zIndex;
-		}
-
-		/**
 		 * The scene transform object that transforms from model to world space.
 		 */
 		public function get sceneTransform() : Matrix3D
@@ -227,24 +218,6 @@ package away3d.core.base
 		public function getIndexBuffer(stage3DProxy : Stage3DProxy) : IndexBuffer3D
 		{
 			return _subGeometry.getIndexBuffer(stage3DProxy);
-		}
-
-		/**
-		 * The model-view-projection (MVP) matrix used to transform from model to homogeneous projection space.
-		 */
-		public function get modelViewProjection() : Matrix3D
-		{
-			return _parentMesh.modelViewProjection;
-		}
-
-		/**
-		 * The model-view-projection (MVP) matrix used to transform from model to homogeneous projection space.
-		 *
-		 * @private
-		 */
-		public function getModelViewProjectionUnsafe() : Matrix3D
-		{
-			return _parentMesh.getModelViewProjectionUnsafe();
 		}
 
 		/**
@@ -380,6 +353,11 @@ package away3d.core.base
 		public function get vertexTangentOffset() : uint
 		{
 			return _subGeometry.vertexTangentOffset;
+		}
+
+		public function getRenderSceneTransform(camera : Camera3D) : Matrix3D
+		{
+			return _parentMesh.sceneTransform;
 		}
 	}
 }

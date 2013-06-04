@@ -39,13 +39,14 @@ package away3d.animators.nodes
 		 */
 		override public function getAGALVertexCode(pass:MaterialPassBase, animationRegisterCache:AnimationRegisterCache):String
 		{
+			pass=pass;
 			var rotationMatrixRegister:ShaderRegisterElement = animationRegisterCache.getFreeVertexConstant();
 			animationRegisterCache.setRegisterIndex(this, MATRIX_INDEX, rotationMatrixRegister.index);
 			animationRegisterCache.getFreeVertexConstant();
 			animationRegisterCache.getFreeVertexConstant();
 			animationRegisterCache.getFreeVertexConstant();
 			
-			var code:String = "m33 " + animationRegisterCache.scaleAndRotateTarget + "," + animationRegisterCache.scaleAndRotateTarget + "," + rotationMatrixRegister + "\n";
+			var code:String = "m33 " + animationRegisterCache.scaleAndRotateTarget + ".xyz," + animationRegisterCache.scaleAndRotateTarget + ".xyz," + rotationMatrixRegister + "\n";
 			
 			var shaderRegisterElement:ShaderRegisterElement;
 			for each (shaderRegisterElement in animationRegisterCache.rotationRegisters)

@@ -1,6 +1,7 @@
 package away3d.cameras.lenses
 {
 	import away3d.core.math.Matrix3DUtils;
+	import flash.geom.Vector3D;
 
 	/**
 	 * The PerspectiveLens object provides a projection matrix that projects 3D geometry isometrically. This entails
@@ -71,6 +72,26 @@ package away3d.cameras.lenses
 			invalidateMatrix();
 		}
 
+		/**
+		 * Calculates the scene position relative to the camera of the given normalized coordinates in screen space.
+		 * 
+		 * @param nX The normalised x coordinate in screen space, -1 corresponds to the left edge of the viewport, 1 to the right.
+		 * @param nY The normalised y coordinate in screen space, -1 corresponds to the top edge of the viewport, 1 to the bottom.
+		 * @param sZ The z coordinate in screen space, representing the distance into the screen.
+		 * @return The scene position relative to the camera of the given screen coordinates.
+		 */
+		override public function unproject(nX:Number, nY:Number, sZ : Number):Vector3D
+		{
+			var v : Vector3D = new Vector3D(nX, -nY, sZ, 1.0);
+			
+			v = unprojectionMatrix.transformVector(v);
+			
+			//z is unaffected by transform
+            v.z = sZ;
+			
+			return v;
+		}
+
 		override public function clone() : LensBase
 		{
 			var clone : OrthographicOffCenterLens = new OrthographicOffCenterLens(_minX, _maxX, _minY, _maxY);
@@ -92,7 +113,7 @@ package away3d.cameras.lenses
 
 			raw[0] = 2*w;
 			raw[5] = 2*h;
-			raw[10] = 1*d;
+			raw[10] = d;
 			raw[12] = -(_maxX + _minX)*w;
 			raw[13] = -(_maxY + _minY)*h;
 			raw[14] = -_near*d;

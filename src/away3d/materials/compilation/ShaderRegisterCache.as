@@ -1,6 +1,4 @@
-package away3d.materials.compilation
-{
-	import away3d.materials.utils.*;
+package away3d.materials.compilation {
 	/**
 	 * ShaderRegister Cache provides the usage management system for all registers during shading compilation.
 	 */
@@ -25,12 +23,14 @@ package away3d.materials.compilation
 		private var _numUsedStreams : uint;
 		private var _numUsedTextures : uint;
 		private var _numUsedVaryings : uint;
+		private var _profile : String;
 
 		/**
 		 * Create a new ShaderRegisterCache object.
 		 */
-		public function ShaderRegisterCache()
+		public function ShaderRegisterCache(profile : String)
 		{
+			_profile = profile;
 		}
 
 		/**

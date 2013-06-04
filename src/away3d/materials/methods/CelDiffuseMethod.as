@@ -1,13 +1,9 @@
-package away3d.materials.methods
-{
+package away3d.materials.methods {
 	import away3d.arcane;
 	import away3d.core.managers.Stage3DProxy;
-	import away3d.materials.compilation.ShaderRegisterData;
-	import away3d.materials.methods.MethodVO;
 	import away3d.materials.compilation.ShaderRegisterCache;
+	import away3d.materials.compilation.ShaderRegisterData;
 	import away3d.materials.compilation.ShaderRegisterElement;
-
-	import flash.display3D.Context3DProgramType;
 
 	use namespace arcane;
 
@@ -103,6 +99,10 @@ package away3d.materials.methods
 		 */
 		private function clampDiffuse(vo : MethodVO, t : ShaderRegisterElement, regCache : ShaderRegisterCache, sharedRegisters : ShaderRegisterData) : String
 		{
+			vo=vo;
+			regCache=regCache;
+			sharedRegisters=sharedRegisters;
+			
 			return 	"mul " + t+".w, " + t+".w, " + _dataReg+".x\n" +
 					"frc " + t+".z, " + t+".w\n" +
 					"sub " + t+".y, " +  t+".w, " + t+".z\n" +

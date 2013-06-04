@@ -5,6 +5,7 @@
 	import away3d.arcane;
 	import away3d.bounds.BoundingSphere;
 	import away3d.bounds.BoundingVolumeBase;
+	import away3d.cameras.Camera3D;
 	import away3d.core.base.IRenderable;
 	import away3d.core.managers.Stage3DProxy;
 	import away3d.core.partition.EntityNode;
@@ -20,6 +21,7 @@
 	import flash.display3D.IndexBuffer3D;
 	import flash.display3D.VertexBuffer3D;
 	import flash.geom.Matrix;
+	import flash.geom.Matrix3D;
 	import flash.geom.Vector3D;
 
 	use namespace arcane;
@@ -74,6 +76,7 @@
 			_vertexBufferDirty = true;
 			_indexBufferDirty = true;
 			_lineCount++;
+			_boundsInvalid = true;
 		}
 
 		arcane function updateSegment(segment : Segment) : void
@@ -138,6 +141,7 @@
 			_vertices[index++] = 1;
 
 			_vertexBufferDirty = true;
+			_boundsInvalid = true;
 		}
 
 		private function removeSegmentByIndex(index : uint) : void
@@ -278,7 +282,36 @@
 		override protected function updateBounds() : void
 		{
 			// todo: fix bounds
-			_bounds.fromExtremes(-10000, -10000, 0, 10000, 10000, 0);
+			//_bounds.fromExtremes(-10000, -10000, 0, 10000, 10000, 0);
+
+			var i:uint;
+			var len:uint = _vertices.length;
+			var minX:Number, minY:Number, minZ:Number;
+			var maxX:Number, maxY:Number, maxZ:Number;
+
+			if( len == 0 ) return;
+
+			var v:Number;
+
+			minX = maxX = _vertices[uint( i++ )];
+			minY = maxY = _vertices[uint( i++ )];
+			minZ = maxZ = _vertices[uint( i++ )];
+
+			while( i < len ) {
+				v = _vertices[i++];
+				if( v < minX ) minX = v;
+				else if( v > maxX ) maxX = v;
+				v = _vertices[i++];
+				if( v < minY ) minY = v;
+				else if( v > maxY ) maxY = v;
+				v = _vertices[i++];
+				if( v < minZ ) minZ = v;
+				else if( v > maxZ ) maxZ = v;
+				i+=8;
+			}
+
+			_bounds.fromExtremes( minX, minY, minZ, maxX, maxY, maxZ );
+			
 			_boundsInvalid = false;
 		}
 
@@ -345,6 +378,11 @@
 		override public function get assetType() : String
 		{
 			return AssetType.SEGMENT_SET;
+		}
+
+		public function getRenderSceneTransform(camera : Camera3D) : Matrix3D
+		{
+			return _sceneTransform;
 		}
 	}
 }

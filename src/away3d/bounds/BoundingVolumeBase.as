@@ -1,10 +1,8 @@
 package away3d.bounds
 {
-
 	import away3d.arcane;
 	import away3d.core.base.*;
 	import away3d.core.math.Plane3D;
-	import away3d.core.pick.*;
 	import away3d.errors.*;
 	import away3d.primitives.*;
 
@@ -134,7 +132,6 @@ package away3d.bounds
 		public function fromGeometry( geometry:Geometry ):void {
 			var subGeoms:Vector.<ISubGeometry> = geometry.subGeometries;
 			var numSubGeoms:uint = subGeoms.length;
-			var first : ISubGeometry = subGeoms[0];
 			var minX:Number, minY:Number, minZ:Number;
 			var maxX:Number, maxY:Number, maxZ:Number;
 
@@ -210,9 +207,24 @@ package away3d.bounds
 		 * @param mvpMatrix The model view projection matrix for the object to which this bounding box belongs.
 		 * @return True if the bounding box is at least partially inside the frustum
 		 */
-		public function isInFrustum( mvpMatrix:Matrix3D ):Boolean
+		public function isInFrustum(planes : Vector.<Plane3D>, numPlanes : int):Boolean
 		{
 			throw new AbstractMethodError();
+		}
+
+		/**
+		 * Tests if the bounds overlap other bounds, treating both bounds as AABBs.
+		 */
+		public function overlaps(bounds : BoundingVolumeBase):Boolean
+		{
+			var min : Vector3D = bounds._min;
+			var max : Vector3D = bounds._max;
+			return 	_max.x > min.x &&
+					_min.x < max.x &&
+					_max.y > min.y &&
+					_min.y < max.y &&
+					_max.z > min.z &&
+					_min.z < max.z;
 		}
 
 		/*public function classifyAgainstPlane(plane : Plane3D) : int
@@ -239,6 +251,7 @@ package away3d.bounds
 		 * @return A Boolean value representing the detection of an intersection.
 		 */
 		public function rayIntersection(position:Vector3D, direction:Vector3D, targetNormal:Vector3D):Number {
+			position=position;direction=direction;targetNormal=targetNormal;
 			return -1;
 		}
 
@@ -249,6 +262,7 @@ package away3d.bounds
 		 * @return A Boolean value representing the detection of a contained position.
 		 */
 		public function containsPoint( position:Vector3D ):Boolean {
+			position=position;
 			return false;
 		}
 
@@ -291,6 +305,11 @@ package away3d.bounds
 		}
 
 		public function classifyToPlane(plane : Plane3D) : int
+		{
+			throw new AbstractMethodError();
+		}
+
+		public function transformFrom(bounds : BoundingVolumeBase, matrix : Matrix3D) : void
 		{
 			throw new AbstractMethodError();
 		}

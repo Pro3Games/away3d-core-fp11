@@ -123,7 +123,7 @@ package away3d.materials.methods
 			data[index+9] = (stage3DProxy.width-1)/63;
 			data[index+10] = (stage3DProxy.height-1)/63;
 			data[index+11] = 2*_range/_depthMapSize;
-			stage3DProxy.setTextureAt(vo.texturesIndex+1, _grainTexture.getTextureForStage3D(stage3DProxy));
+			stage3DProxy._context3D.setTextureAt(vo.texturesIndex+1, _grainTexture.getTextureForStage3D(stage3DProxy));
 		}
 
 		/**
@@ -134,6 +134,8 @@ package away3d.materials.methods
 			var depthMapRegister : ShaderRegisterElement = regCache.getFreeTextureReg();
 			var decReg : ShaderRegisterElement = regCache.getFreeFragmentConstant();
 			var dataReg : ShaderRegisterElement = regCache.getFreeFragmentConstant();
+			// TODO: not used
+			dataReg=dataReg;
 			var customDataReg : ShaderRegisterElement = regCache.getFreeFragmentConstant();
 
 			vo.fragmentConstantsIndex = decReg.index*4;
@@ -235,7 +237,7 @@ package away3d.materials.methods
 			data[index+1] = (stage3DProxy.width-1)/63;
 			data[index+2] = (stage3DProxy.height-1)/63;
 			data[index+3] = 2*_range/_depthMapSize;
-			stage3DProxy.setTextureAt(vo.texturesIndex+1, _grainTexture.getTextureForStage3D(stage3DProxy));
+			stage3DProxy._context3D.setTextureAt(vo.texturesIndex+1, _grainTexture.getTextureForStage3D(stage3DProxy));
 		}
 
 		override arcane function getCascadeFragmentCode(vo : MethodVO, regCache : ShaderRegisterCache, decodeRegister : ShaderRegisterElement, depthTexture : ShaderRegisterElement, depthProjection : ShaderRegisterElement, targetRegister : ShaderRegisterElement) : String

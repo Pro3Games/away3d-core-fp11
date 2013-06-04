@@ -1,14 +1,11 @@
-﻿package away3d.core.base
-{
+﻿package away3d.core.base {
 	import away3d.arcane;
-	import away3d.core.base.SubGeometry;
 	import away3d.core.managers.Stage3DProxy;
+
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DVertexBufferFormat;
-
 	import flash.display3D.VertexBuffer3D;
 	import flash.geom.Matrix3D;
-	import flash.geom.Vector3D;
 
 	use namespace arcane;
 
@@ -146,7 +143,7 @@
 				_vertexNormals = updateVertexNormals(_vertexNormals);
 
 			if (!_vertexNormalBuffer[contextIndex] || _vertexNormalBufferContext[contextIndex] != context) {
-				_vertexNormalBuffer[contextIndex] = context.createVertexBuffer(_numVertices, 3)
+				_vertexNormalBuffer[contextIndex] = context.createVertexBuffer(_numVertices, 3);
 				_vertexNormalBufferContext[contextIndex] = context;
 				_normalsInvalid[contextIndex] = true;
  			}
@@ -172,7 +169,7 @@
 				_vertexTangents = updateVertexTangents(_vertexTangents);
 
 			if (!_vertexTangentBuffer[contextIndex] || _vertexTangentBufferContext[contextIndex] != context) {
-				_vertexTangentBuffer[contextIndex] = context.createVertexBuffer(_numVertices, 3)
+				_vertexTangentBuffer[contextIndex] = context.createVertexBuffer(_numVertices, 3);
 				_vertexTangentBufferContext[contextIndex] = context;
 				_tangentsInvalid[contextIndex] = true;
  			}

@@ -1,8 +1,6 @@
-package away3d.primitives
-{
+package away3d.primitives {
 	import away3d.arcane;
 	import away3d.core.base.CompactSubGeometry;
-	import away3d.core.base.SubGeometry;
 
 	use namespace arcane;
 
@@ -201,7 +199,7 @@ package away3d.primitives
 						}
 						for (i = 0; i < 3; ++i) {
 							data[index] = -data[index-stride];
-							++index
+							++index;
 						}
 						index +=skip;
 					}

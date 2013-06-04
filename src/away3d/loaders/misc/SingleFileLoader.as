@@ -114,6 +114,13 @@ package away3d.loaders.misc {
 	 * @eventType away3d.events.AssetEvent
 	 */
 	[Event(name="animatorComplete", type="away3d.events.AssetEvent")]
+
+	/**
+	 * Dispatched when an image assets dimensions are not a power of 2
+	 * 
+	 * @eventType away3d.events.AssetEvent
+	 */
+	[Event(name="textureSizeError", type="away3d.events.AssetEvent")]
 	
 	
 	/**
@@ -277,11 +284,10 @@ package away3d.loaders.misc {
 		 */
 		private function decomposeFilename(url : String) : void
 		{
-			var base : String;
-			var i : int = url.lastIndexOf('.');
 			
 			// Get rid of query string if any and extract suffix
-			base = (url.indexOf('?')>0)? url.split('?')[0] : url;
+			var base : String = (url.indexOf('?')>0)? url.split('?')[0] : url;
+			var i : int = base.lastIndexOf('.');
 			_fileExtension = base.substr(i + 1).toLowerCase();
 			_fileName = base.substr(0, i);
 		}
@@ -371,6 +377,7 @@ package away3d.loaders.misc {
 			if(_parser){
 				_parser.addEventListener(ParserEvent.READY_FOR_DEPENDENCIES, onReadyForDependencies);
 				_parser.addEventListener(ParserEvent.PARSE_COMPLETE, onParseComplete);
+				_parser.addEventListener(AssetEvent.TEXTURE_SIZE_ERROR, onTextureSizeError);
 				_parser.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 				_parser.addEventListener(AssetEvent.ANIMATION_SET_COMPLETE, onAssetComplete);
 				_parser.addEventListener(AssetEvent.ANIMATION_STATE_COMPLETE, onAssetComplete);
@@ -409,6 +416,11 @@ package away3d.loaders.misc {
 		{
 			this.dispatchEvent(event.clone());
 		}
+
+		private function onTextureSizeError(event : AssetEvent) : void
+		{
+			this.dispatchEvent(event.clone());
+		}
 		
 		/**
 		 * Called when parsing is complete.
@@ -419,6 +431,7 @@ package away3d.loaders.misc {
 			
 			_parser.removeEventListener(ParserEvent.READY_FOR_DEPENDENCIES, onReadyForDependencies);
 			_parser.removeEventListener(ParserEvent.PARSE_COMPLETE, onParseComplete);
+			_parser.removeEventListener(AssetEvent.TEXTURE_SIZE_ERROR, onTextureSizeError);
 			_parser.removeEventListener(AssetEvent.ASSET_COMPLETE, onAssetComplete);
 			_parser.removeEventListener(AssetEvent.ANIMATION_SET_COMPLETE, onAssetComplete);
 			_parser.removeEventListener(AssetEvent.ANIMATION_STATE_COMPLETE, onAssetComplete);

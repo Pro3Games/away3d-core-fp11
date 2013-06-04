@@ -1,9 +1,5 @@
 ﻿package away3d.entities {
-	import com.pro3games.particle.jumpStart.JumpStarter;
-	import com.pro3games.particle.jumpStart.JumpStartee;
-	import com.pro3games.particle.jumpStart.JumpStartTraverser;
-	import com.pro3games.particle.jumpStart.JumpStartNode;
-	import away3d.materials.utils.DefaultMaterialManager;
+
 	import away3d.animators.IAnimator;
 	import away3d.arcane;
 	import away3d.containers.*;
@@ -12,6 +8,11 @@
 	import away3d.events.*;
 	import away3d.library.assets.*;
 	import away3d.materials.*;
+	import away3d.materials.utils.DefaultMaterialManager;
+
+	import com.pro3games.particle.jumpStart.JumpStartTraverser;
+	import com.pro3games.particle.jumpStart.JumpStartee;
+	import com.pro3games.particle.jumpStart.JumpStarter;
 
 	use namespace arcane;
 
@@ -63,7 +64,7 @@
 		}
 
 		/**
-		 * Indicates whether or not the Mesh can cast shadows
+		 * Indicates whether or not the Mesh can cast shadows. Default value is <code>true</code>.
 		 */
 		public function get castsShadows() : Boolean
 		{
@@ -76,7 +77,7 @@
 		}
 
 		/**
-		 * Defines the animator of the mesh. Act on the mesh's geometry. Defaults to null
+		 * Defines the animator of the mesh. Act on the mesh's geometry.  Default value is <code>null</code>.
 		 */
 		public function get animator() : IAnimator
 		{
@@ -347,7 +348,7 @@
 			for (var i : int = 0; i < len; ++i) {
 				var subMesh : SubMesh = _subMeshes[i];
 
-				var ignoreFacesLookingAway:Boolean = _material ? !_material.bothSides : true;
+				//var ignoreFacesLookingAway:Boolean = _material ? !_material.bothSides : true;
 				if (_pickingCollider.testSubMeshCollision(subMesh, _pickingCollisionVO, shortestCollisionDistance)) {
 					shortestCollisionDistance = _pickingCollisionVO.rayEntryDistance;
 					_pickingCollisionVO.renderable = subMesh;
@@ -358,7 +359,7 @@
 
 			return _pickingCollisionVO.renderable != null;
 		}
-
+		
 		public function acceptTraverser(jumpStartTraverser:JumpStartTraverser):void {			
 			jumpStartTraverser.apply(this);
 			jumpStartTraverser.pushJumpStarter(this);
@@ -367,6 +368,6 @@
 
 		public function jumpStart(jumpStarter:JumpStarter):void {
 			jumpStarter.exit(this);
-		}
+		}		
 	}
 }

@@ -65,7 +65,7 @@ package away3d.core.render
 			if (!_filters) return;
 
 			for (var i : int = 0; i < _filters.length; ++i)
-				_requireDepthRender ||= _filters[i].requireDepthRender;
+				_requireDepthRender ||= Boolean(_filters[i].requireDepthRender);
 
 
 			_filterSizesInvalid = true;
@@ -131,15 +131,15 @@ package away3d.core.render
 					context.setVertexBufferAt(0, vertexBuffer, 0, Context3DVertexBufferFormat.FLOAT_2);
 					context.setVertexBufferAt(1, vertexBuffer, 2, Context3DVertexBufferFormat.FLOAT_2);
 				}
-				stage3DProxy.setTextureAt(0, task.getMainInputTexture(stage3DProxy));
-				stage3DProxy.setProgram(task.getProgram3D(stage3DProxy));
-				context.clear(0.0, 0.0, 0.0, 1.0);
+				context.setTextureAt(0, task.getMainInputTexture(stage3DProxy));
+				context.setProgram(task.getProgram3D(stage3DProxy));
+				context.clear(0.0, 0.0, 0.0, 0.0);
 				task.activate(stage3DProxy, camera3D, depthTexture);
 				context.drawTriangles(indexBuffer, 0, 2);
 				task.deactivate(stage3DProxy);
 			}
 
-			stage3DProxy.setTextureAt(0, null);
+			context.setTextureAt(0, null);
 			context.setVertexBufferAt(0, null);
 			context.setVertexBufferAt(1, null);
 		}

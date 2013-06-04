@@ -1,13 +1,9 @@
-package away3d.materials.methods
-{
+package away3d.materials.methods {
 	import away3d.arcane;
 	import away3d.core.managers.Stage3DProxy;
-	import away3d.materials.compilation.ShaderRegisterData;
-	import away3d.materials.methods.MethodVO;
 	import away3d.materials.compilation.ShaderRegisterCache;
+	import away3d.materials.compilation.ShaderRegisterData;
 	import away3d.materials.compilation.ShaderRegisterElement;
-
-	import flash.display3D.Context3DProgramType;
 
 	use namespace arcane;
 
@@ -86,6 +82,7 @@ package away3d.materials.methods
 		 */
 		private function clampSpecular(methodVO : MethodVO, target : ShaderRegisterElement, regCache : ShaderRegisterCache, sharedRegisters : ShaderRegisterData) : String
 		{
+			methodVO=methodVO;regCache=regCache;sharedRegisters=sharedRegisters;
 			return 	"sub " + target+".y, " + target+".w, " + _dataReg+".y\n" + // x - cutoff
 					"div " + target+".y, " + target+".y, " + _dataReg+".x\n" + // (x - cutoff)/epsilon
 					"sat " + target+".y, " + target+".y\n" +

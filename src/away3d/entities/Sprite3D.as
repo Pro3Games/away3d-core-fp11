@@ -1,10 +1,8 @@
 package away3d.entities
 {
-
 	import away3d.animators.IAnimator;
 	import away3d.arcane;
 	import away3d.bounds.AxisAlignedBoundingBox;
-	import away3d.bounds.BoundingSphere;
 	import away3d.bounds.BoundingVolumeBase;
 	import away3d.cameras.Camera3D;
 	import away3d.core.base.IRenderable;
@@ -15,7 +13,6 @@ package away3d.entities
 	import away3d.core.partition.EntityNode;
 	import away3d.core.partition.RenderableNode;
 	import away3d.core.pick.IPickingCollider;
-	import away3d.core.pick.PickingColliderType;
 	import away3d.materials.MaterialBase;
 
 	import flash.display3D.IndexBuffer3D;
@@ -35,10 +32,10 @@ package away3d.entities
 	{
 		// TODO: Replace with CompactSubGeometry
 		private static var _geometry : SubGeometry;
-		private static var _pickingSubMesh:SubGeometry;
+		//private static var _pickingSubMesh:SubGeometry;
 
 		private var _material : MaterialBase;
-		private var _spriteMatrix : Matrix3D;
+		protected var _spriteMatrix : Matrix3D;
 		private var _animator : IAnimator;
 
 		private var _pickingSubMesh:SubMesh;
@@ -127,32 +124,6 @@ package away3d.entities
 		public function getIndexBuffer(stage3DProxy : Stage3DProxy) : IndexBuffer3D
 		{
 			return _geometry.getIndexBuffer(stage3DProxy);
-		}
-
-		override public function pushModelViewProjection(camera : Camera3D, updateZIndex : Boolean = true) : void
-		{
-			_camera = camera;
-			
-			var comps : Vector.<Vector3D>;
-			var rot : Vector3D;
-			if (++_mvpIndex == _stackLen) {
-				_mvpTransformStack[_mvpIndex] = new Matrix3D();
-				++_stackLen;
-			}
-
-			// todo: find better way
-			var mvp : Matrix3D = _mvpTransformStack[_mvpIndex];
-			mvp.copyFrom(sceneTransform);
-			mvp.append(camera.inverseSceneTransform);
-			comps = mvp.decompose();
-			rot = comps[1];
-			rot.x = rot.y = rot.z = 0;
-			mvp.recompose(comps);
-			mvp.append(camera.lens.matrix);
-			if (updateZIndex) {
-				mvp.copyColumnTo(3, _pos);
-				_zIndices[_mvpIndex] = -_pos.z + 1000000 + _zOffset;
-			}
 		}
 
 		public function get numTriangles() : uint
@@ -272,6 +243,7 @@ package away3d.entities
 
 		override arcane function collidesBefore(shortestCollisionDistance : Number, findClosest : Boolean) : Boolean
 		{
+			findClosest=findClosest;
 			var viewTransform:Matrix3D = _camera.inverseSceneTransform.clone();
 			viewTransform.transpose();
 			var rawViewTransform:Vector.<Number> = Matrix3DUtils.RAW_DATA_CONTAINER;
@@ -299,6 +271,17 @@ package away3d.entities
 			}
 
 			return _pickingCollisionVO.renderable != null;
+		}
+
+		public function getRenderSceneTransform(camera : Camera3D) : Matrix3D
+		{
+			var comps : Vector.<Vector3D> = camera.sceneTransform.decompose();
+			var scale : Vector3D = comps[2];
+			comps[0] = scenePosition;
+			scale.x = _width*_scaleX;
+			scale.y = _height*_scaleY;
+			_spriteMatrix.recompose(comps);
+			return _spriteMatrix;
 		}
 	}
 }

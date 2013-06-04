@@ -1,9 +1,7 @@
 package away3d.primitives
 {
-
 	import away3d.arcane;
 	import away3d.bounds.BoundingVolumeBase;
-	import away3d.cameras.Camera3D;
 	import away3d.entities.SegmentSet;
 	import away3d.errors.AbstractMethodError;
 	import away3d.primitives.data.Segment;
@@ -59,12 +57,6 @@ package away3d.primitives
 		override public function removeAllSegments() : void
 		{
 			super.removeAllSegments();
-		}
-
-		override public function pushModelViewProjection(camera : Camera3D, updateZIndex : Boolean = true) : void
-		{
-			if (_geomDirty) updateGeometry();
-			super.pushModelViewProjection(camera, updateZIndex);
 		}
 
 		override public function get bounds() : BoundingVolumeBase

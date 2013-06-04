@@ -48,6 +48,8 @@ package away3d.animators.nodes
 		 */
 		override public function getAGALVertexCode(pass:MaterialPassBase, animationRegisterCache:AnimationRegisterCache) : String
 		{
+			pass=pass;
+			
 			var accelerationValue:ShaderRegisterElement = (_mode == ParticlePropertiesMode.GLOBAL)? animationRegisterCache.getFreeVertexConstant() : animationRegisterCache.getFreeVertexAttribute();
 			animationRegisterCache.setRegisterIndex(this, ACCELERATION_INDEX, accelerationValue.index);
 			
@@ -61,7 +63,7 @@ package away3d.animators.nodes
 			{
 				var temp2:ShaderRegisterElement = animationRegisterCache.getFreeVertexVectorTemp();
 				code += "mul " + temp2 + "," + temp + "," + animationRegisterCache.vertexTwoConst + "\n";
-				code += "add " + animationRegisterCache.velocityTarget + ".xyz," + temp2 + ".xyz," + animationRegisterCache.velocityTarget + "\n";
+				code += "add " + animationRegisterCache.velocityTarget + ".xyz," + temp2 + ".xyz," + animationRegisterCache.velocityTarget + ".xyz\n";
 			}
 			animationRegisterCache.removeVertexTempUsage(temp);
 			

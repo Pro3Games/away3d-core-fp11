@@ -117,8 +117,6 @@ package away3d.loaders.parsers
 		 */
 		override arcane function resolveDependencyFailure(resourceDependency:ResourceDependency):void
 		{
-			// TODO: not used
-			resourceDependency = resourceDependency; 			
 			// apply system default
 			_mesh.material = DefaultMaterialManager.getDefaultMaterial();
 		} 
@@ -354,7 +352,8 @@ package away3d.loaders.parsers
 			var vertLen : uint = _vertIndices.length;
 			var fvertices : Vector.<Number>;
 			var tvertices : Vector.<Number>;
-			var i : uint, j : int, k : uint, ch : uint;
+			var i : uint, j : int, k : uint;
+			//var ch : uint;
 			var name : String = "";
 			var prevClip : VertexClipNode = null;
 			

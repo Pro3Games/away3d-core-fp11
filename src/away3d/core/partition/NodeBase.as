@@ -1,9 +1,10 @@
 package away3d.core.partition
 {
+	import away3d.core.math.Plane3D;
+
 	import flash.geom.Vector3D;
 	
 	import away3d.arcane;
-	import away3d.cameras.Camera3D;
 	import away3d.core.traverse.PartitionTraverser;
 	import away3d.entities.Entity;
 	import away3d.primitives.WireframePrimitiveBase;
@@ -87,7 +88,7 @@ package away3d.core.partition
 
 			do {
 				node._numEntities += numEntities;
-			} while ((node = node._parent));
+			} while ((node = node._parent) != null);
 		}
 
 		/**
@@ -110,7 +111,7 @@ package away3d.core.partition
 
 			do {
 				node._numEntities -= numEntities;
-			} while ((node = node._parent));
+			} while ((node = node._parent) != null);
 		}
 
 		/**
@@ -119,19 +120,13 @@ package away3d.core.partition
 		 *
 		 * @return Whether or not the node is at least partly inside the view frustum.
 		 */
-		public function isInFrustum(camera : Camera3D) : Boolean
+		public function isInFrustum(planes : Vector.<Plane3D>, numPlanes : int) : Boolean
 		{
-			var inFrustum : Boolean = isInFrustumImpl(camera);
-			if (inFrustum && _debugPrimitive)
-				_debugPrimitive.pushModelViewProjection(camera);
-			return inFrustum;
-		}
-
-		protected function isInFrustumImpl(camera : Camera3D) : Boolean
-		{
+			planes=planes;
+			numPlanes=numPlanes;
 			return true;
 		}
-		
+
 		/**
 		 * Tests if the current node is intersecting with a ray.
 		 * @param rayPosition The starting position of the ray
@@ -141,9 +136,8 @@ package away3d.core.partition
 		 */
 		public function isIntersectingRay(rayPosition : Vector3D, rayDirection : Vector3D) : Boolean
 		{
-			// TODO: not used
-			rayPosition = null; 
-			rayDirection = null;
+			rayPosition=rayPosition;
+			rayDirection=rayDirection;
 			return true;
 		}
 		
@@ -152,6 +146,7 @@ package away3d.core.partition
 		 */
 		public function findPartitionForEntity(entity : Entity) : NodeBase
 		{
+			entity=entity;
 			return this;
 		}
 
@@ -171,7 +166,8 @@ package away3d.core.partition
 
 			if (traverser.enterNode(this)) {
 				var i : uint;
-				while (i < _numChildNodes) _childNodes[i++].acceptTraverser(traverser);
+				while (i < _numChildNodes)
+					_childNodes[i++].acceptTraverser(traverser);
 
 				if (_debugPrimitive)
 					traverser.applyRenderable(_debugPrimitive);
@@ -195,7 +191,7 @@ package away3d.core.partition
 
 			do {
 				node._numEntities += diff;
-			} while ((node = node._parent));
+			} while ((node = node._parent) != null);
 		}
 	}
 }

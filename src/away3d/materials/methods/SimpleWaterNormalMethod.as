@@ -1,12 +1,9 @@
-package away3d.materials.methods
-{
+package away3d.materials.methods {
 	import away3d.arcane;
 	import away3d.core.managers.Stage3DProxy;
 	import away3d.materials.compilation.ShaderRegisterCache;
 	import away3d.materials.compilation.ShaderRegisterElement;
 	import away3d.textures.Texture2DBase;
-
-	import flash.display3D.Context3DProgramType;
 
 	use namespace arcane;
 
@@ -39,8 +36,8 @@ package away3d.materials.methods
 		override arcane function initVO(vo : MethodVO) : void
 		{
 			super.initVO(vo);
-			if (normalMap == secondaryNormalMap)
-				_useSecondNormalMap = false;
+			
+			_useSecondNormalMap = normalMap != secondaryNormalMap; 
 		}
 
 		public function get water1OffsetX() : Number
@@ -124,7 +121,7 @@ package away3d.materials.methods
 			data[index+7] = _water2OffsetY;
 
 			if (_useSecondNormalMap >= 0) {
-				stage3DProxy.setTextureAt(vo.texturesIndex+1, _texture2.getTextureForStage3D(stage3DProxy));
+				stage3DProxy._context3D.setTextureAt(vo.texturesIndex+1, _texture2.getTextureForStage3D(stage3DProxy));
 			}
 		}
 

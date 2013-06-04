@@ -1,10 +1,10 @@
-﻿package away3d.textures
-{
+﻿package away3d.textures {
 	import away3d.arcane;
 	import away3d.materials.utils.MipmapGenerator;
 	import away3d.tools.utils.TextureUtils;
 
 	import flash.display.BitmapData;
+	import flash.display3D.textures.Texture;
 	import flash.display3D.textures.TextureBase;
 
 	use namespace arcane;
@@ -16,12 +16,14 @@
 
 		private var _bitmapData : BitmapData;
 		private var _mipMapHolder : BitmapData;
+		private var _generateMipmaps: Boolean;
 
-		public function BitmapTexture(bitmapData : BitmapData)
+		public function BitmapTexture(bitmapData : BitmapData, generateMipmaps:Boolean = true)
 		{
 			super();
 
 			this.bitmapData = bitmapData;
+			_generateMipmaps = generateMipmaps;
 		}
 
 		public function get bitmapData() : BitmapData
@@ -41,33 +43,27 @@
 
 			_bitmapData = value;
 
-			//setMipMap();
+			if (_generateMipmaps) getMipMapHolder();
 		}
 
 		override protected function uploadContent(texture : TextureBase) : void
 		{
-			MipmapGenerator.reallyGenerateMipMaps(_bitmapData, texture, _mipMapHolder, true);
-			//_bitmapData.dispose();
-			//_bitmapData = null;
+			if (_generateMipmaps) MipmapGenerator.generateMipMaps(_bitmapData, texture, _mipMapHolder, true);
+			else Texture(texture).uploadFromBitmapData (_bitmapData, 0);
 		}
 
-		private function setMipMap() : void
+		private function getMipMapHolder() : void
 		{
-			var oldW : uint, oldH : uint;
 			var newW : uint, newH : uint;
 
 			newW = _bitmapData.width;
 			newH = _bitmapData.height;
 
 			if (_mipMapHolder) {
-				oldW = _mipMapHolder.width;
-				oldH = _mipMapHolder.height;
-				if (oldW == _bitmapData.width && oldH == _bitmapData.height) return;
+				if (_mipMapHolder.width == newW && _bitmapData.height == newH)
+					return;
 
-				if (--_mipMapUses[oldW][_mipMapHolder.height] == 0) {
-					_mipMaps[oldW][oldH].dispose();
-					_mipMaps[oldW][oldH] = null;
-				}
+				freeMipMapHolder();
 			}
 
 			if (!_mipMaps[newW]) {
@@ -79,9 +75,28 @@
 				_mipMapUses[newW][newH] = 1;
 			}
 			else {
-				++_mipMapUses[newW][newH];
+				_mipMapUses[newW][newH] = _mipMapUses[newW][newH] + 1;
 				_mipMapHolder = _mipMaps[newW][newH];
 			}
+		}
+
+		private function freeMipMapHolder() : void
+		{
+			var holderWidth : uint = _mipMapHolder.width;
+			var holderHeight : uint = _mipMapHolder.height;
+
+			if (--_mipMapUses[holderWidth][holderHeight] == 0) {
+				_mipMaps[holderWidth][holderHeight].dispose();
+				_mipMaps[holderWidth][holderHeight] = null;
+			}
+		}
+
+		override public function dispose() : void
+		{
+			super.dispose();
+
+			if (_mipMapHolder)
+				freeMipMapHolder();
 		}
 	}
 }

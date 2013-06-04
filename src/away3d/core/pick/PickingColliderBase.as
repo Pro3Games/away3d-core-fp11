@@ -2,6 +2,10 @@ package away3d.core.pick
 {
 	import flash.geom.*;
 
+	import away3d.tools.utils.GeomUtil;
+	import away3d.core.base.SubGeometry;
+	import away3d.core.base.SubMesh;
+
 	/**
 	 * An abstract base class for all picking collider classes. It should not be instantiated directly.
 	 */
@@ -9,6 +13,10 @@ package away3d.core.pick
 	{
 		protected var rayPosition:Vector3D;
 		protected var rayDirection:Vector3D;
+
+		public function PickingColliderBase() {
+			
+		}
 
 		protected function getCollisionNormal( indexData:Vector.<uint>, vertexData:Vector.<Number>, triangleIndex:uint ):Vector3D {
 			var normal:Vector3D = new Vector3D();
@@ -28,15 +36,24 @@ package away3d.core.pick
 		protected function getCollisionUV( indexData:Vector.<uint>, uvData:Vector.<Number>, triangleIndex:uint, v:Number, w:Number, u:Number, uvOffset : uint, uvStride : uint):Point {
 			var uv:Point = new Point();
 			var uIndex:uint = indexData[ triangleIndex ] * uvStride + uvOffset;
-			var vIndex:uint = uIndex + 1;
-			var uv0:Vector3D = new Vector3D( uvData[ uIndex ], uvData[ vIndex ] );
+			var uv0:Vector3D = new Vector3D( uvData[ uIndex ], uvData[ uIndex + 1 ] );
 			uIndex = indexData[ triangleIndex+1 ] * uvStride + uvOffset;
-			var uv1:Vector3D = new Vector3D( uvData[ uIndex ], uvData[ vIndex ] );
+			var uv1:Vector3D = new Vector3D( uvData[ uIndex ], uvData[ uIndex + 1 ] );
 			uIndex = indexData[ triangleIndex+2 ] * uvStride + uvOffset;
-			var uv2:Vector3D = new Vector3D( uvData[ uIndex ], uvData[ vIndex ] );
+			var uv2:Vector3D = new Vector3D( uvData[ uIndex ], uvData[ uIndex + 1 ] );
 			uv.x = u * uv0.x + v * uv1.x + w * uv2.x;
 			uv.y = u * uv0.y + v * uv1.y + w * uv2.y;
 			return uv;
+		}
+
+		protected function getMeshSubgeometryIndex(subGeometry:SubGeometry):uint
+		{
+			return GeomUtil.getMeshSubgeometryIndex(subGeometry);
+		}
+
+		protected function getMeshSubMeshIndex(subMesh:SubMesh):uint
+		{
+			return GeomUtil.getMeshSubMeshIndex(subMesh);
 		}
 
 		/**

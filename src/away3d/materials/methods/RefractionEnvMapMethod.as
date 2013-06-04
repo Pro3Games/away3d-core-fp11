@@ -1,12 +1,9 @@
-package away3d.materials.methods
-{
+package away3d.materials.methods {
 	import away3d.arcane;
 	import away3d.core.managers.Stage3DProxy;
 	import away3d.materials.compilation.ShaderRegisterCache;
 	import away3d.materials.compilation.ShaderRegisterElement;
 	import away3d.textures.CubeTextureBase;
-
-	import flash.display3D.Context3DProgramType;
 
 	use namespace arcane;
 
@@ -47,7 +44,20 @@ package away3d.materials.methods
 			vo.needsNormals = true;
 			vo.needsView = true;
 		}
-
+		
+		/**
+		 * The cube environment map to use for the refraction.
+		 */
+		public function get envMap() : CubeTextureBase
+		{
+			return _envMap;
+		}
+		
+		public function set envMap(value : CubeTextureBase) : void
+		{
+			_envMap = value;
+		}
+		
 		public function get refractionIndex() : Number
 		{
 			return _refractionIndex;
@@ -126,7 +136,7 @@ package away3d.materials.methods
 				data[index+2] = _dispersionB + _refractionIndex;
 			}
 			data[index+3] = _alpha;
-			stage3DProxy.setTextureAt(vo.texturesIndex, _envMap.getTextureForStage3D(stage3DProxy));
+			stage3DProxy._context3D.setTextureAt(vo.texturesIndex, _envMap.getTextureForStage3D(stage3DProxy));
 		}
 
 		arcane override function getFragmentCode(vo : MethodVO, regCache : ShaderRegisterCache, targetReg : ShaderRegisterElement) : String

@@ -1,12 +1,8 @@
-package away3d.materials.methods
-{
+package away3d.materials.methods {
 	import away3d.arcane;
 	import away3d.core.managers.Stage3DProxy;
 	import away3d.materials.compilation.ShaderRegisterCache;
 	import away3d.materials.compilation.ShaderRegisterElement;
-	import away3d.textures.Texture2DBase;
-	
-	import flash.display3D.Context3DProgramType;
 
 	use namespace arcane;
 
@@ -37,7 +33,7 @@ package away3d.materials.methods
 
 		public function get wrapFactor() : Number
 		{
-			return _wrapFactor
+			return _wrapFactor;
 		}
 
 		public function set wrapFactor(value : Number) : void

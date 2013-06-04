@@ -89,7 +89,7 @@ package away3d.stereo
 					_stage3DProxy._context3D.present();
 				
 				// fire collected mouse events
-				//_mouse3DManager.fireMouseEvents();
+//				_mouse3DManager.fireMouseEvents();
 			}
 			else {
 				_camera = _stereoCam;
@@ -102,13 +102,13 @@ package away3d.stereo
 		private function renderWithCamera(cam : Camera3D, texture : Texture, doMouse : Boolean) : void
 		{
 			_entityCollector.clear();
-			
-			updateViewSizeData();
-			
+
 			_camera = cam;
 			_camera.lens.aspectRatio = _aspectRatio;
 			_entityCollector.camera = _camera;
-			
+
+			updateViewSizeData();
+
 			// Always use RTT for stereo rendering
 			_renderer.textureRatioX = _rttBufferManager.textureRatioX;
 			_renderer.textureRatioY = _rttBufferManager.textureRatioY;
@@ -117,8 +117,8 @@ package away3d.stereo
 			_scene.traversePartitions(_entityCollector);
 			
 			// update picking
-			//if (doMouse)
-				//_mouse3DManager.updateCollider(this);
+//			if (doMouse)
+//				_mouse3DManager.updateCollider(this);
 			
 			//			updateLights(_entityCollector);
 			

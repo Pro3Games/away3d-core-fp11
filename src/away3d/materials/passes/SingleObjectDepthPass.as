@@ -1,16 +1,13 @@
-package away3d.materials.passes
-{
+package away3d.materials.passes {
 	import away3d.arcane;
 	import away3d.cameras.Camera3D;
 	import away3d.core.base.IRenderable;
 	import away3d.core.managers.Stage3DProxy;
 	import away3d.lights.LightBase;
-	import away3d.materials.lightpickers.LightPickerBase;
 
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DProgramType;
 	import flash.display3D.Context3DTextureFormat;
-	import flash.display3D.Context3DVertexBufferFormat;
 	import flash.display3D.textures.Texture;
 	import flash.geom.Matrix3D;
 	import flash.utils.Dictionary;
@@ -111,6 +108,8 @@ package away3d.materials.passes
 		 */
 		arcane override function getFragmentCode(animationCode:String) : String
 		{
+			// TODO: not used
+			animationCode=animationCode;
 			var code : String = "";
 
 			// encode float -> rgba
@@ -146,7 +145,7 @@ package away3d.materials.passes
 		/**
 		 * @inheritDoc
 		 */
-		arcane override function render(renderable : IRenderable, stage3DProxy : Stage3DProxy, camera : Camera3D) : void
+		arcane override function render(renderable : IRenderable, stage3DProxy : Stage3DProxy, camera : Camera3D, viewProjection : Matrix3D) : void
 		{
 			var matrix : Matrix3D;
 			var contextIndex : int = stage3DProxy._stage3DIndex;
@@ -181,11 +180,11 @@ package away3d.materials.passes
 		/**
 		 * @inheritDoc
 		 */
-		override arcane function activate(stage3DProxy : Stage3DProxy, camera : Camera3D, textureRatioX : Number, textureRatioY : Number) : void
+		override arcane function activate(stage3DProxy : Stage3DProxy, camera : Camera3D) : void
 		{
 			if (_projectionTexturesInvalid) updateProjectionTextures();
 			// never scale
-			super.activate(stage3DProxy, camera, 1, 1);
+			super.activate(stage3DProxy, camera);
 			stage3DProxy._context3D.setProgramConstantsFromVector(Context3DProgramType.VERTEX, 4, _polyOffset, 1);
 		}
 	}

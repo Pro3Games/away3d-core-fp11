@@ -1,49 +1,37 @@
-package away3d.lights.shadowmaps
-{
+package away3d.lights.shadowmaps {
 	import away3d.arcane;
 	import away3d.cameras.Camera3D;
 	import away3d.cameras.lenses.FreeMatrixLens;
 	import away3d.cameras.lenses.LensBase;
-	import away3d.cameras.lenses.OrthographicOffCenterLens;
 	import away3d.containers.Scene3D;
 	import away3d.core.math.Matrix3DUtils;
-	import away3d.core.math.Plane3D;
 	import away3d.core.render.DepthRenderer;
-	import away3d.lights.DirectionalLight;
+
 	import flash.display3D.textures.TextureBase;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	import flash.geom.Matrix3D;
 	import flash.geom.Rectangle;
-	import flash.geom.Vector3D;
 
 	use namespace arcane;
 
-	public class CascadeShadowMapper extends ShadowMapperBase implements IEventDispatcher
+	public class CascadeShadowMapper extends DirectionalShadowMapper implements IEventDispatcher
 	{
 		protected var _scissorRects : Vector.<Rectangle>;
 		private var _scissorRectsInvalid : Boolean = true;
 		private var _splitRatios : Vector.<Number>;
 
 		private var _numCascades : int;
-		private var _overallCamera : Camera3D;
-		private var _overallLens : OrthographicOffCenterLens;
 		private var _depthCameras : Vector.<Camera3D>;
 		private var _depthLenses : Vector.<FreeMatrixLens>;
 
-		private var _lightOffset : Number = 5000;
-		private var _localFrustum : Vector.<Number>;
 		private var _texOffsetsX : Vector.<Number>;
 		private var _texOffsetsY : Vector.<Number>;
 
-		private static var _calcMatrix : Matrix3D = new Matrix3D();
-		private static var _calcVector : Vector3D = new Vector3D();
-
 		private var _changeDispatcher : EventDispatcher;
 		private var _nearPlaneDistances : Vector.<Number>;
-		private var _splitPlanes : Vector.<Plane3D>;
-
+		
 		public function CascadeShadowMapper(numCascades : uint = 3)
 		{
 			super();
@@ -52,7 +40,7 @@ package away3d.lights.shadowmaps
 			_changeDispatcher = new EventDispatcher(this);
 			init();
 		}
-
+		
 		public function getSplitRatio(index : uint) : Number
 		{
 			return _splitRatios[index];
@@ -75,15 +63,13 @@ package away3d.lights.shadowmaps
 
 		private function init() : void
 		{
-			_localFrustum = new Vector.<Number>(8 * 3);
 			_splitRatios = new Vector.<Number>(_numCascades, true);
 			_nearPlaneDistances = new Vector.<Number>(_numCascades, true);
-			_splitPlanes = new Vector.<Plane3D>(_numCascades, true);
 
 			var s : Number = 1;
 			for (var i : int = _numCascades-1; i >= 0; --i) {
 				_splitRatios[i] = s;
-				s *= .3333;
+				s *= .4;
 			}
 
 			_texOffsetsX = new <Number>[-1, 1, -1, 1];
@@ -92,24 +78,10 @@ package away3d.lights.shadowmaps
 			_depthLenses = new Vector.<FreeMatrixLens>();
 			_depthCameras = new Vector.<Camera3D>();
 
-			_overallLens = new OrthographicOffCenterLens(-1, 1, -1, 1);
-			_overallCamera = new Camera3D(_overallLens);
-
 			for (i = 0; i < _numCascades; ++i) {
-				_splitPlanes[i] = new Plane3D();
 				_depthLenses[i] = new FreeMatrixLens();
 				_depthCameras[i] = new Camera3D(_depthLenses[i]);
 			}
-		}
-
-		public function get lightOffset() : Number
-		{
-			return _lightOffset;
-		}
-
-		public function set lightOffset(value : Number) : void
-		{
-			_lightOffset = value;
 		}
 
 		// will not be allowed
@@ -144,11 +116,12 @@ package away3d.lights.shadowmaps
 		{
 			if (_scissorRectsInvalid) updateScissorRects();
 
+			_casterCollector.cullPlanes = _cullPlanes;
+			_casterCollector.camera = _overallDepthCamera;
 			_casterCollector.clear();
-			_casterCollector.camera = _overallCamera;
 			scene.traversePartitions(_casterCollector);
 
-			renderer.renderCascades(_casterCollector, target, _numCascades, _scissorRects, _splitPlanes, _depthCameras);
+			renderer.renderCascades(_casterCollector, target, _numCascades, _scissorRects, _depthCameras);
 
 			_casterCollector.cleanUp();
 		}
@@ -168,112 +141,43 @@ package away3d.lights.shadowmaps
 		override protected function updateDepthProjection(viewCamera : Camera3D) : void
 		{
 			var matrix : Matrix3D;
+			var lens : LensBase = viewCamera.lens;
+			var lensNear : Number = lens.near;
+			var lensRange : Number = lens.far - lensNear;
 
-			updateLocalFrustum(viewCamera);
-			updateOverallMatrix();
+			updateProjectionFromFrustumCorners(viewCamera, viewCamera.lens.frustumCorners, _matrix);
+			_matrix.appendScale(.96, .96, 1);
+			_overallDepthLens.matrix = _matrix;
+			updateCullPlanes(viewCamera);
 
 			for (var i : int = 0; i < _numCascades; ++i) {
 				matrix = _depthLenses[i].matrix;
+				
+				_nearPlaneDistances[i] = lensNear + _splitRatios[i]*lensRange;
+				_depthCameras[i].transform = _overallDepthCamera.transform;
 
-				_depthCameras[i].transform = _overallCamera.transform;
-
-				updateProjectionPartition(matrix, i == 0? 0 : _splitRatios[i-1], _splitRatios[i], _texOffsetsX[i], _texOffsetsY[i]);
+				updateProjectionPartition(matrix, _splitRatios[i], _texOffsetsX[i], _texOffsetsY[i]);
 
 				_depthLenses[i].matrix = matrix;
 			}
 		}
 
-		private function updateLocalFrustum(viewCamera : Camera3D) : void
-		{
-			var corners : Vector.<Number> = viewCamera.lens.frustumCorners;
-			var dir : Vector3D = DirectionalLight(_light).sceneDirection;
-
-			_overallCamera.transform = _light.sceneTransform;
-			_overallCamera.x = viewCamera.x-dir.x * _lightOffset;
-			_overallCamera.y = viewCamera.y-dir.y * _lightOffset;
-			_overallCamera.z = viewCamera.z-dir.z * _lightOffset;
-
-			_calcMatrix.copyFrom(_overallCamera.inverseSceneTransform);
-			_calcMatrix.prepend(viewCamera.sceneTransform);
-			_calcMatrix.transformVectors(corners, _localFrustum);
-
-			viewCamera.sceneTransform.copyColumnTo(2, _calcVector);
-			var point : Vector3D = viewCamera.scenePosition;
-			var a : Number = -_calcVector.x;
-			var b : Number = -_calcVector.y;
-			var c : Number = -_calcVector.z;
-			var len : Number = Math.sqrt(a*a + b*b + c*c);
-			var d : Number = a*point.x + b*point.y + c*point.z;
-			var lens : LensBase = viewCamera.lens;
-			var near : Number = lens.near;
-			var frustumDepth : Number = lens.far - near;
-
-			for (var i : uint = 0; i < _numCascades; ++i) {
-				var dist : Number = near + _splitRatios[i]*frustumDepth;
-				var plane : Plane3D = _splitPlanes[i];
-				plane.a = a;
-				plane.b = b;
-				plane.c = c;
-				plane.d = d - dist * len;
-				_nearPlaneDistances[i] = dist;
-			}
-		}
-
-		private function updateOverallMatrix() : void
-		{
-			var i : uint;
-			var xN : Number, yN : Number, zN : Number;
-			var minX : Number = Number.POSITIVE_INFINITY, minY : Number = Number.POSITIVE_INFINITY;
-			var maxX : Number = Number.NEGATIVE_INFINITY, maxY : Number = Number.NEGATIVE_INFINITY, maxZ : Number = Number.NEGATIVE_INFINITY;
-
-			while (i < 24) {
-				xN = _localFrustum[i];
-				yN = _localFrustum[uint(i+1)];
-				zN = _localFrustum[uint(i+2)];
-				if (xN < minX) minX = xN;
-				if (xN > maxX) maxX = xN;
-				if (yN < minY) minY = yN;
-				if (yN > maxY) maxY = yN;
-				if (zN > maxZ) maxZ = zN;
-				i += 3;
-			}
-
-			_overallLens.minX = minX;
-			_overallLens.minY = minY;
-			_overallLens.near = 1;
-			_overallLens.maxX = maxX;
-			_overallLens.maxY = maxY;
-			_overallLens.far = maxZ;
-		}
-
-		private function updateProjectionPartition(matrix : Matrix3D, minRatio : Number, maxRatio : Number, texOffsetX : Number, texOffsetY : Number) : void
+		private function updateProjectionPartition(matrix : Matrix3D, splitRatio : Number, texOffsetX : Number, texOffsetY : Number) : void
 		{
 			var raw : Vector.<Number> = Matrix3DUtils.RAW_DATA_CONTAINER;
-			var x1 : Number, y1 : Number, z1 : Number;
-			var x2 : Number, y2 : Number, z2 : Number;
 			var xN : Number, yN : Number, zN : Number;
 			var xF : Number, yF : Number, zF : Number;
 			var minX : Number = Number.POSITIVE_INFINITY, minY : Number = Number.POSITIVE_INFINITY, minZ : Number;
 			var maxX : Number = Number.NEGATIVE_INFINITY, maxY : Number = Number.NEGATIVE_INFINITY, maxZ : Number = Number.NEGATIVE_INFINITY;
-			var scaleX : Number, scaleY : Number;
-			var offsX : Number, offsY : Number;
-			var halfSize : Number = _depthMapSize*.5;
-			var i : uint;
+			var i : uint = 0;
 
-			i = 0;
 			while (i < 12) {
-				x1 = _localFrustum[i];
-				y1 = _localFrustum[uint(i+1)];
-				z1 = _localFrustum[uint(i+2)];
-				x2 = _localFrustum[uint(i+12)] - x1;
-				y2 = _localFrustum[uint(i+13)] - y1;
-				z2 = _localFrustum[uint(i+14)] - z1;
-				xN = x1 + x2*minRatio;
-				yN = y1 + y2*minRatio;
-				zN = z1 + z2*maxRatio;
-				xF = x1 + x2*maxRatio;
-				yF = y1 + y2*maxRatio;
-				zF = z1 + z2*maxRatio;
+				xN = _localFrustum[i];
+				yN = _localFrustum[uint(i+1)];
+				zN = _localFrustum[uint(i+2)];
+				xF = xN + (_localFrustum[uint(i+12)] - xN)*splitRatio;
+				yF = yN + (_localFrustum[uint(i+13)] - yN)*splitRatio;
+				zF = zN + (_localFrustum[uint(i+14)] - zN)*splitRatio;
 				if (xN < minX) minX = xN;
 				if (xN > maxX) maxX = xN;
 				if (yN < minY) minY = yN;
@@ -287,24 +191,32 @@ package away3d.lights.shadowmaps
 				i += 3;
 			}
 
-			minZ = 10;
+			minZ = 1;
 
-			var quantizeFactor : Number = 128;
-			var invQuantizeFactor : Number = 1/quantizeFactor;
-
-			scaleX = 2*invQuantizeFactor/Math.ceil((maxX - minX)*invQuantizeFactor);
-			scaleY = 2*invQuantizeFactor/Math.ceil((maxY - minY)*invQuantizeFactor);
-
-			offsX = Math.ceil(-.5*(maxX + minX)*scaleX*halfSize) / halfSize;
-			offsY = Math.ceil(-.5*(maxY + minY)*scaleY*halfSize) / halfSize;
-
+			var w : Number = (maxX - minX);
+			var h : Number = (maxY - minY);
 			var d : Number = 1/(maxZ - minZ);
 
-			raw[0] = scaleX;
-			raw[5] = scaleY;
+			if (minX < 0) minX -= _snap;	// because int() rounds up for < 0
+			if (minY < 0) minY -= _snap;
+			minX = int(minX / _snap) * _snap;
+			minY = int(minY / _snap) * _snap;
+
+			var snap2 : Number = 2*_snap;
+			w = int(w/snap2 + 1)*snap2;
+			h = int(h/snap2 + 1)*snap2;
+
+			maxX = minX + w;
+			maxY = minY + h;
+
+			w = 1/w;
+			h = 1/h;
+
+			raw[0] = 2*w;
+			raw[5] = 2*h;
 			raw[10] = d;
-			raw[12] = offsX;
-			raw[13] = offsY;
+			raw[12] = -(maxX + minX)*w;
+			raw[13] = -(maxY + minY)*h;
 			raw[14] = -minZ * d;
 			raw[15] = 1;
 			raw[1] = raw[2] = raw[3] = raw[4] = raw[6] = raw[7] = raw[8] = raw[9] = raw[11] = 0;

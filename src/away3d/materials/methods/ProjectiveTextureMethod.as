@@ -1,5 +1,4 @@
-package away3d.materials.methods
-{
+package away3d.materials.methods {
 	import away3d.arcane;
 	import away3d.cameras.Camera3D;
 	import away3d.core.base.IRenderable;
@@ -8,7 +7,6 @@ package away3d.materials.methods
 	import away3d.materials.compilation.ShaderRegisterCache;
 	import away3d.materials.compilation.ShaderRegisterElement;
 
-	import flash.display3D.Context3DProgramType;
 	import flash.geom.Matrix3D;
 
 	use namespace arcane;
@@ -51,7 +49,7 @@ package away3d.materials.methods
 			data[index] = .5;
 			data[index+1] = -.5;
 			data[index+2] = 1.0;
-			data[index+3] = 1.0
+			data[index+3] = 1.0;
 		}
 
 		arcane override function cleanCompilationData() : void
@@ -103,7 +101,7 @@ package away3d.materials.methods
 			regCache.getFreeVertexConstant();
 			regCache.getFreeVertexConstant();
 			regCache.getFreeVertexVectorTemp();
-			vo.vertexConstantsIndex = (projReg.index-vo.vertexConstantsOffset)*4;
+			vo.vertexConstantsIndex = projReg.index*4;
 			_uvVarying = regCache.getFreeVarying();
 
 			return "m44 " + _uvVarying + ", vt0, " + projReg + "\n";
@@ -145,7 +143,7 @@ package away3d.materials.methods
 		arcane override function setRenderState(vo : MethodVO, renderable : IRenderable, stage3DProxy : Stage3DProxy, camera : Camera3D) : void
 		{
 			_projMatrix.copyFrom(_projector.viewProjection);
-			_projMatrix.prepend(renderable.sceneTransform);
+			_projMatrix.prepend(renderable.getRenderSceneTransform(camera));
 			_projMatrix.copyRawDataTo(vo.vertexData, vo.vertexConstantsIndex, true);
 		}
 
@@ -154,7 +152,7 @@ package away3d.materials.methods
 		 */
 		override arcane function activate(vo : MethodVO, stage3DProxy : Stage3DProxy) : void
 		{
-			stage3DProxy.setTextureAt(vo.texturesIndex, _projector.texture.getTextureForStage3D(stage3DProxy));
+			stage3DProxy._context3D.setTextureAt(vo.texturesIndex, _projector.texture.getTextureForStage3D(stage3DProxy));
 		}
 	}
 }

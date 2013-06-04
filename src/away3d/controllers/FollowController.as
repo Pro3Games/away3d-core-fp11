@@ -1,11 +1,8 @@
 package away3d.controllers 
 {
-	
 	import away3d.containers.ObjectContainer3D;
-	import away3d.core.math.MathConsts;
 	import away3d.entities.Entity;
 	
-	import flash.geom.Vector3D;
 	
 	/**
 	 * Controller used to follow behind an object on the XZ plane, with an optional
@@ -20,8 +17,10 @@ package away3d.controllers
 			super(targetObject, lookAtObject, 0, tiltAngle, distance);
 		}
 		
-		override public function update():void 
+		override public function update(interpolate:Boolean = true):void 
 		{
+			interpolate = interpolate;// unused: prevents warning
+
 			if (!lookAtObject)
 				return;			
 			

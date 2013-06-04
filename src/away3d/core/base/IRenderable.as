@@ -1,5 +1,6 @@
 package away3d.core.base
 {
+	import away3d.cameras.Camera3D;
 	import away3d.core.managers.Stage3DProxy;
 	import away3d.entities.Entity;
 
@@ -18,27 +19,16 @@ package away3d.core.base
 		function get sceneTransform() : Matrix3D;
 
 		/**
+		 * The transformation matrix that transforms from model to world space, adapted with any special operations needed to render.
+		 * For example, assuring certain alignedness which is not inherent in the scene transform. By default, this would
+		 * return the scene transform.
+		 */
+		function getRenderSceneTransform(camera : Camera3D) : Matrix3D;
+
+		/**
 		 * The inverse scene transform object that transforms from world to model space.
 		 */
 		function get inverseSceneTransform() : Matrix3D;
-
-		/**
-		 * The model-view-projection (MVP) matrix used to transform from model to homogeneous projection space.
-		 */
-		function get modelViewProjection() : Matrix3D;
-
-		/**
-		 * The model-view-projection (MVP) matrix used to transform from model to homogeneous projection space.
-		 * NOT guarded, should never be called outside the render loop.
-		 *
-		 * @private
-		 */
-		function getModelViewProjectionUnsafe() : Matrix3D;
-
-		/**
-		 * The distance of the IRenderable object to the view, used to sort per object.
-		 */
-		function get zIndex() : Number;
 
 		/**
 		 * Indicates whether the IRenderable should trigger mouse events, and hence should be rendered for hit testing.

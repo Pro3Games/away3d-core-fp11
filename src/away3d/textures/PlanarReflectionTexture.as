@@ -79,7 +79,7 @@ package away3d.textures
 		 */
 		public function applyTransform(matrix : Matrix3D) : void
 		{
-			var rawData : Vector.<Number> = Matrix3DUtils.RAW_DATA_CONTAINER;
+			//var rawData : Vector.<Number> = Matrix3DUtils.RAW_DATA_CONTAINER;
 			_matrix.copyFrom(matrix);
 			// invert transpose
 			_matrix.invert();
@@ -141,8 +141,8 @@ package away3d.textures
 			updateSize(view.width, view.height);
 			updateCamera(camera);
 
-			_entityCollector.clear();
 			_entityCollector.camera = _camera;
+			_entityCollector.clear();
 			view.scene.traversePartitions(_entityCollector);
 			_renderer.stage3DProxy = view.stage3DProxy;
 			_renderer.render(_entityCollector, super.getTextureForStage3D(view.stage3DProxy), _scissorRect);

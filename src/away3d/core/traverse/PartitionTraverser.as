@@ -34,12 +34,17 @@ package away3d.core.traverse
 		 */
 		arcane static var _collectionMark : uint;
 
+		public function PartitionTraverser() {
+			
+		}
+
 		/**
 		 * Called when the traversers enters a node. At minimum, it notifies the currently visited Partition3DNode whether or not further recursion is necessary.
 		 * @param node The currently entered node.
 		 * @return true if further recursion down children is necessary, false if not.
 		 */
 		public function enterNode(node : NodeBase) : Boolean {
+			node=node;
 		 	return true;
 		}
 

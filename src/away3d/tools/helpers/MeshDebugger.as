@@ -9,7 +9,7 @@ package away3d.tools.helpers
 	* Helper Class for Mesh objects <code>MeshDebugger</code>
 	* Displays the normals, tangents and vertexNormals of a given mesh.
 	*/
-	public class MeshDebugger{
+	public class MeshDebugger {
 		 
 		private var _meshesData : Vector.<MeshDebugData> = new Vector.<MeshDebugData>();
 		private var _colorNormals : uint = 0xFF3399;
@@ -19,6 +19,9 @@ package away3d.tools.helpers
 		private var _lengthTangents:Number = 50;
 		private var _lengthVertexNormals:Number = 50;
 		private var _dirty:Boolean;
+
+
+		function MeshDebugger(){}
 		
 		/*
 		* To set a mesh into debug state
@@ -30,10 +33,10 @@ package away3d.tools.helpers
 		*/
 		public function debug(mesh:Mesh, scene:Scene3D, displayNormals:Boolean = true, displayVertexNormals:Boolean = false, displayTangents:Boolean = false):MeshDebugData
 		{
-			meshDebugData = isMeshDebug(mesh);
+			var meshDebugData:MeshDebugData = isMeshDebug(mesh);
 			
 			if(!meshDebugData){
-				var meshDebugData:MeshDebugData = new MeshDebugData();
+				meshDebugData = new MeshDebugData();
 				meshDebugData.meshDebug = new MeshDebug();
 				meshDebugData.mesh = mesh;
 				meshDebugData.scene = scene;

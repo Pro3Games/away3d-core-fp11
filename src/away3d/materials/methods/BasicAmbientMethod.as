@@ -1,14 +1,12 @@
 package away3d.materials.methods
 {
 	import away3d.arcane;
+	import away3d.cameras.Camera3D;
+	import away3d.core.base.IRenderable;
 	import away3d.core.managers.Stage3DProxy;
-	import away3d.materials.methods.MethodVO;
 	import away3d.materials.compilation.ShaderRegisterCache;
 	import away3d.materials.compilation.ShaderRegisterElement;
 	import away3d.textures.Texture2DBase;
-	
-	import flash.display3D.Context3D;
-	import flash.display3D.Context3DProgramType;
 
 	use namespace arcane;
 
@@ -137,17 +135,8 @@ package away3d.materials.methods
 		 */
 		override arcane function activate(vo : MethodVO, stage3DProxy : Stage3DProxy) : void
 		{
-			updateAmbient();
-			
 			if (_useTexture)
-				stage3DProxy.setTextureAt(vo.texturesIndex, _texture.getTextureForStage3D(stage3DProxy));
-			else {
-				var index : int = vo.fragmentConstantsIndex;
-				var data : Vector.<Number> = vo.fragmentData;
-				data[index] = _ambientR;
-				data[index+1] = _ambientG;
-				data[index+2] = _ambientB;
-			}
+				stage3DProxy._context3D.setTextureAt(vo.texturesIndex, _texture.getTextureForStage3D(stage3DProxy));
 		}
 
 		/**
@@ -158,6 +147,20 @@ package away3d.materials.methods
 			_ambientR = ((_ambientColor >> 16) & 0xff) / 0xff * _ambient * _lightAmbientR;
 			_ambientG = ((_ambientColor >> 8) & 0xff) / 0xff * _ambient * _lightAmbientG;
 			_ambientB = (_ambientColor & 0xff) / 0xff * _ambient * _lightAmbientB;
+		}
+
+
+		override arcane function setRenderState(vo : MethodVO, renderable : IRenderable, stage3DProxy : Stage3DProxy, camera : Camera3D) : void
+		{
+			updateAmbient();
+
+			if (!_useTexture) {
+				var index : int = vo.fragmentConstantsIndex;
+				var data : Vector.<Number> = vo.fragmentData;
+				data[index] = _ambientR;
+				data[index+1] = _ambientG;
+				data[index+2] = _ambientB;
+			}
 		}
 	}
 }
