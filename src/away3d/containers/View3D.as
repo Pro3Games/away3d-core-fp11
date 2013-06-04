@@ -57,9 +57,9 @@
 		private var _backgroundColor : uint = 0x000000;
 		private var _backgroundAlpha : Number = 1;
 
-		protected var _mouse3DManager : Mouse3DManager;
+		//protected var _mouse3DManager : Mouse3DManager;
 
-		protected var _touch3DManager : Touch3DManager;
+//		protected var _touch3DManager : Touch3DManager;
 
 		protected var _renderer : RendererBase;
 		private var _depthRenderer : DepthRenderer;
@@ -168,12 +168,12 @@
 
 			initHitField();
 			
-			_mouse3DManager = new Mouse3DManager();
-			_mouse3DManager.enableMouseListeners(this);
+//			_mouse3DManager = new Mouse3DManager();
+//			_mouse3DManager.enableMouseListeners(this);
 
-			_touch3DManager = new Touch3DManager();
-			_touch3DManager.view = this;
-			_touch3DManager.enableTouchListeners( this );
+//			_touch3DManager = new Touch3DManager();
+//			_touch3DManager.view = this;
+//			_touch3DManager.enableTouchListeners( this );
 			
 			addEventListener(Event.ADDED_TO_STAGE, onAddedToStage, false, 0, true);
 			addEventListener(Event.ADDED, onAdded, false, 0, true);
@@ -229,13 +229,14 @@
 		 */
 		public function get forceMouseMove() : Boolean
 		{
-			return _mouse3DManager.forceMouseMove;
+//			return _mouse3DManager.forceMouseMove;
+			return false;
 		}
 
 		public function set forceMouseMove(value : Boolean) : void
 		{
-			_mouse3DManager.forceMouseMove = value;
-			_touch3DManager.forceTouchMove = value;
+//			_mouse3DManager.forceMouseMove = value;
+//			_touch3DManager.forceTouchMove = value;
 		}
 
 		public function get background() : Texture2DBase
@@ -666,8 +667,8 @@
 			_scene.traversePartitions(_entityCollector);
 
 			// update picking
-			_mouse3DManager.updateCollider(this);
-			_touch3DManager.updateCollider();
+//			_mouse3DManager.updateCollider(this);
+//			_touch3DManager.updateCollider();
 
 			if (_requireDepthRender)
 				renderSceneDepthToTexture(_entityCollector);
@@ -695,8 +696,8 @@
 				stage3DProxy.present();
 
 				// fire collected mouse events
-				_mouse3DManager.fireMouseEvents();
-				_touch3DManager.fireTouchEvents();
+//				_mouse3DManager.fireMouseEvents();
+//				_touch3DManager.fireTouchEvents();
 			}
 
 			// clean up data for this render
@@ -808,16 +809,16 @@
 			if (_rttBufferManager)
 				_rttBufferManager.dispose();
 
-			_mouse3DManager.disableMouseListeners(this);
-			_mouse3DManager.dispose();
+//			_mouse3DManager.disableMouseListeners(this);
+//			_mouse3DManager.dispose();
 
-			_touch3DManager.disableTouchListeners( this );
-			_touch3DManager.dispose();
+//			_touch3DManager.disableTouchListeners( this );
+//			_touch3DManager.dispose();
 			
 			_rttBufferManager = null;
 			_depthRender = null;
-			_mouse3DManager = null;
-			_touch3DManager = null;
+//			_mouse3DManager = null;
+//			_touch3DManager = null;
 			_depthRenderer = null;
 			_stage3DProxy = null;
 			_renderer = null;
@@ -872,20 +873,22 @@
 		
 		public function get mousePicker() : IPicker
 		{
-			return _mouse3DManager.mousePicker;
+//			return _mouse3DManager.mousePicker;
+			return null; 
 		}
 		
 		public function set mousePicker(value : IPicker) : void
 		{
-			_mouse3DManager.mousePicker = value;
+//			_mouse3DManager.mousePicker = value
 		}
 
 		public function get touchPicker():IPicker {
-			return _touch3DManager.touchPicker;
+//			return _touch3DManager.touchPicker;
+			return null;
 		}
 
 		public function set touchPicker( value:IPicker ):void {
-			_touch3DManager.touchPicker = value;
+//			_touch3DManager.touchPicker = value;
 		}
 
 		/**
@@ -933,7 +936,7 @@
 			if (_height == 0) height = stage.stageHeight;
 			else _rttBufferManager.viewHeight = _height;
 			
-			if (_shareContext) _mouse3DManager.addViewLayer(this);
+//			if (_shareContext) _mouse3DManager.addViewLayer(this);
 		}
 
 		private function onAdded(event : Event) : void
