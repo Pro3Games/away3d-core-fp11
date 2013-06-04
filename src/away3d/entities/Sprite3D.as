@@ -35,7 +35,7 @@ package away3d.entities
 		//private static var _pickingSubMesh:SubGeometry;
 
 		private var _material : MaterialBase;
-		private var _spriteMatrix : Matrix3D;
+		protected var _spriteMatrix : Matrix3D;
 		private var _animator : IAnimator;
 
 		private var _pickingSubMesh:SubMesh;
