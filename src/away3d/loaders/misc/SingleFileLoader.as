@@ -1,5 +1,4 @@
-package away3d.loaders.misc
-{
+package away3d.loaders.misc {
 	import away3d.arcane;
 	import away3d.events.AssetEvent;
 	import away3d.events.LoaderEvent;
@@ -7,7 +6,7 @@ package away3d.loaders.misc
 	import away3d.loaders.parsers.ImageParser;
 	import away3d.loaders.parsers.ParserBase;
 	import away3d.loaders.parsers.ParserDataFormat;
-	
+
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
@@ -143,6 +142,7 @@ package away3d.loaders.misc
 		private var _fileName : String;
 		private var _loadAsRawData : Boolean;
 		private var _data : *;
+		private var _loadStrategy : AbstractLoadStrategy;
 		
 		// Image parser only parser that is added by default, to save file size.
 		private static var _parsers : Vector.<Class> = Vector.<Class>([ ImageParser ]);
@@ -196,9 +196,8 @@ package away3d.loaders.misc
 		 * @param urlRequest The URLRequest object containing the URL of the object to be loaded.
 		 * @param parser An optional parser object that will translate the loaded data into a usable resource. If not provided, AssetLoader will attempt to auto-detect the file type.
 		 */
-		public function load(urlRequest : URLRequest, parser : ParserBase = null, loadAsRawData : Boolean = false) : void
+		public function load(urlRequest : URLRequest, parser : ParserBase = null, loadAsRawData : Boolean = false, customLoadStrategy : AbstractLoadStrategy = null) : void
 		{
-			var urlLoader : URLLoader;
 			var dataFormat : String;
 			
 			_loadAsRawData = loadAsRawData;
@@ -232,11 +231,16 @@ package away3d.loaders.misc
 				}
 			}
 			
-			urlLoader = new URLLoader();
-			urlLoader.dataFormat = dataFormat;
-			urlLoader.addEventListener(Event.COMPLETE, handleUrlLoaderComplete);
-			urlLoader.addEventListener(IOErrorEvent.IO_ERROR, handleUrlLoaderError);
-			urlLoader.load(urlRequest);
+			if(customLoadStrategy != null) {
+				_loadStrategy = customLoadStrategy;
+			} else {
+				_loadStrategy = new URLLoaderStrategy();
+			}
+
+			_loadStrategy.dataFormat = dataFormat;
+			_loadStrategy.addEventListener(Event.COMPLETE, handleLoaderComplete);
+			_loadStrategy.addEventListener(IOErrorEvent.IO_ERROR, handleLoaderError);
+			_loadStrategy.load(urlRequest);			
 		}
 		
 		/**
@@ -324,19 +328,18 @@ package away3d.loaders.misc
 		/**
 		 * Cleanups
 		 */
-		private function removeListeners(urlLoader:URLLoader) : void
+		private function removeListeners(loadStrategy:AbstractLoadStrategy) : void
 		{
-			urlLoader.removeEventListener(Event.COMPLETE, handleUrlLoaderComplete);
-			urlLoader.removeEventListener(IOErrorEvent.IO_ERROR, handleUrlLoaderError);
+			loadStrategy.removeEventListener(Event.COMPLETE, handleLoaderComplete);
+			loadStrategy.removeEventListener(IOErrorEvent.IO_ERROR, handleLoaderError);
 		}
 		
 		/**
 		 * Called when loading of a file has failed
 		 */
-		private function handleUrlLoaderError(event:IOErrorEvent) : void
+		private function handleLoaderError(event:IOErrorEvent) : void
 		{
-			var urlLoader : URLLoader = URLLoader(event.currentTarget);
-			removeListeners(urlLoader);
+			removeListeners(_loadStrategy);
 			
 			if(hasEventListener(LoaderEvent.LOAD_ERROR))
 				dispatchEvent(new LoaderEvent(LoaderEvent.LOAD_ERROR, _req.url, true, event.text));
@@ -345,12 +348,11 @@ package away3d.loaders.misc
 		/**
 		 * Called when loading of a file is complete
 		 */
-		private function handleUrlLoaderComplete(event : Event) : void
+		private function handleLoaderComplete(event : Event) : void
 		{
-			var urlLoader : URLLoader = URLLoader(event.currentTarget);
-			removeListeners(urlLoader);
+			removeListeners(_loadStrategy);
 			
-			_data = urlLoader.data;
+			_data = _loadStrategy.data;
 			
 			if (_loadAsRawData) {
 				// No need to parse this data, which should be returned as is
